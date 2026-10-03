@@ -1,0 +1,56 @@
+.group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 40px;
+  padding: 0 14px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--cp-track);
+  background: var(--cp-surface);
+  color: var(--cp-text);
+  font-size: 13px;
+  font-weight: 800;
+  white-space: nowrap;
+  transition:
+    background var(--dur-base) var(--ease),
+    color var(--dur-base) var(--ease),
+    border-color var(--dur-base) var(--ease);
+}
+
+.md .chip {
+  padding: 0 16px;
+  font-size: 14px;
+}
+
+.chip[data-selected='true'] {
+  background: var(--cp-dark);
+  border-color: var(--cp-dark);
+  color: #fff;
+}
+
+.count {
+  opacity: 0.75;
+}
+
+/* Setup wizard choices: larger, brand-purple when selected. */
+.brand {
+  gap: 8px;
+}
+
+.brand .chip {
+  height: 44px;
+  padding: 0 18px;
+  border-width: 1.5px;
+  font-size: 14px;
+}
+
+.brand .chip[data-selected='true'] {
+  background: var(--cp-primary);
+  border-color: var(--cp-primary);
+}

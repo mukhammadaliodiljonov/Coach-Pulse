@@ -1,0 +1,140 @@
+.fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
+  gap: 16px;
+  padding: 20px 22px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fieldValue {
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+  gap: 12px;
+}
+
+.summaryTile {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 18px 20px;
+  border-radius: var(--radius-card-sm);
+  background: var(--cp-surface);
+  box-shadow: var(--shadow-card);
+}
+
+.summaryLabel {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--cp-text-secondary);
+}
+
+.summaryValue {
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.summaryValue[data-tone='review'] {
+  color: var(--cp-review-fg);
+}
+
+.summaryUnit {
+  font-size: 14px;
+  color: var(--cp-text-muted);
+}
+
+.list {
+  padding: 8px 0;
+  gap: 0;
+}
+
+.listTitle {
+  padding: 14px 22px 8px;
+}
+
+.rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 12px 22px;
+  border-top: 1px solid var(--cp-divider);
+  color: var(--cp-text);
+  font-weight: 400;
+}
+
+.row:hover {
+  background: var(--cp-fill);
+  color: var(--cp-text);
+  text-decoration: none;
+}
+
+.who {
+  flex: 1;
+  min-width: 160px;
+  display: flex;
+  flex-direction: column;
+}
+
+.name {
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.reason {
+  font-size: 12px;
+  color: var(--cp-text-secondary);
+}
+
+.numbers {
+  display: flex;
+  justify-content: flex-end;
+  gap: 18px;
+  min-width: 250px;
+  font-size: 13px;
+}
+
+.number {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-weight: 800;
+}
+
+.number:last-child {
+  min-width: 64px;
+}
+
+.numberLabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--cp-text-muted);
+}
+
+.empty {
+  padding: 18px 22px;
+  font-size: 14px;
+  color: var(--cp-text-muted);
+}

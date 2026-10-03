@@ -1,0 +1,189 @@
+.breadcrumb ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--cp-text-muted);
+}
+
+.current {
+  color: var(--cp-text);
+  font-weight: 700;
+}
+
+.header {
+  overflow: hidden;
+  border-radius: var(--radius-header);
+  background: var(--cp-surface);
+  box-shadow: var(--shadow-card);
+}
+
+.headerBand {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 22px 24px;
+}
+
+.header[data-status='high'] .headerBand {
+  background: var(--cp-high-bg);
+}
+
+.header[data-status='review'] .headerBand {
+  background: var(--cp-review-bg);
+}
+
+.identity {
+  flex: 1;
+  min-width: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.name {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.meta {
+  font-size: 14px;
+  color: var(--cp-text-secondary);
+}
+
+.headline {
+  padding: 18px 24px;
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.header[data-status='high'] .headline {
+  color: var(--cp-high-fg);
+}
+
+.header[data-status='review'] .headline {
+  color: var(--cp-review-fg);
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.signals {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: 12px;
+}
+
+.signal {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px;
+  border-radius: var(--radius-card-sm);
+  background: var(--cp-surface);
+  box-shadow: var(--shadow-card);
+}
+
+.kindRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.kind {
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.signal[data-level='high'] .kind {
+  color: var(--cp-high-fg);
+}
+
+.signal[data-level='review'] .kind {
+  color: var(--cp-review-fg);
+}
+
+.signalTitle {
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.compare {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.compareTile {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--cp-bg);
+}
+
+.signal[data-level='high'] .compareTile[data-now='true'] {
+  background: var(--cp-high-bg);
+}
+
+.signal[data-level='review'] .compareTile[data-now='true'] {
+  background: var(--cp-review-bg);
+}
+
+.compareLabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--cp-text-secondary);
+}
+
+.compareValue {
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.note {
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--cp-text-secondary);
+}
+
+.nextStep {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 22px;
+  border-radius: var(--radius-card);
+  background: var(--cp-primary-container);
+  color: var(--cp-on-primary-container);
+}
+
+.nextTitle {
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.nextText {
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.nextNote {
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding-top: 6px;
+}

@@ -1,0 +1,21 @@
+.note {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--cp-primary-container);
+  color: var(--cp-on-primary-container);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  margin-top: 6px;
+  border-radius: 50%;
+  background: var(--cp-primary);
+  flex-shrink: 0;
+}

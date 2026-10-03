@@ -1,0 +1,235 @@
+.toolbar {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.search {
+  flex: 1;
+  min-width: 240px;
+  max-width: 420px;
+}
+
+.searchShell {
+  height: 48px;
+  background: var(--cp-surface);
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 40px;
+  border-radius: var(--radius-card);
+  background: var(--cp-surface);
+  text-align: center;
+}
+
+.emptyTitle {
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.tableCard {
+  overflow-x: auto;
+  border-radius: var(--radius-card);
+  background: var(--cp-surface);
+  box-shadow: var(--shadow-card);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.table th {
+  padding: 14px 10px;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--cp-text-secondary);
+  white-space: nowrap;
+}
+
+.table td {
+  padding: 12px 10px;
+  vertical-align: middle;
+}
+
+.table th:first-child,
+.table td:first-child {
+  padding-left: 20px;
+}
+
+.table th:last-child,
+.table td:last-child {
+  padding-right: 20px;
+}
+
+.row {
+  border-top: 1px solid var(--cp-divider);
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease);
+}
+
+.row[data-status='high'] {
+  background: var(--cp-high-row);
+}
+
+.row:hover {
+  background: var(--cp-fill);
+}
+
+.row:focus-visible {
+  outline-offset: -3px;
+}
+
+.athlete {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.athleteText {
+  display: flex;
+  flex-direction: column;
+}
+
+.name {
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.position {
+  font-size: 12px;
+  color: var(--cp-text-muted);
+}
+
+.statusCell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.reason {
+  max-width: 220px;
+  font-size: 12px;
+  color: var(--cp-text-secondary);
+}
+
+.metric {
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 10px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.metric[data-flagged='true'] {
+  background: var(--cp-review-bg);
+  color: var(--cp-review-fg);
+}
+
+.usual {
+  display: block;
+  margin-top: 3px;
+  padding-left: 10px;
+  font-size: 11px;
+  color: var(--cp-text-muted);
+  white-space: nowrap;
+}
+
+.checkIn {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.checkIn[data-pending='true'] {
+  color: var(--cp-review-fg);
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+  gap: 12px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border-radius: var(--radius-card-sm);
+  background: var(--cp-surface);
+  box-shadow: var(--shadow-card);
+  color: var(--cp-text);
+  font-weight: 400;
+}
+
+.card:hover {
+  color: var(--cp-text);
+  text-decoration: none;
+  box-shadow: var(--shadow-card), 0 0 0 1.5px var(--cp-track);
+}
+
+.cardHead {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cardName {
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.cardStatus {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cardReason {
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--cp-text-secondary);
+}
+
+.cardMetrics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.cardMetric {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px;
+  border-radius: 12px;
+  background: var(--cp-fill);
+}
+
+.cardMetric[data-flagged='true'] {
+  background: var(--cp-review-bg);
+}
+
+.cardMetricLabel {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--cp-text-secondary);
+}
+
+.cardMetricValue {
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.cardMetric[data-flagged='true'] .cardMetricValue {
+  color: var(--cp-review-fg);
+}

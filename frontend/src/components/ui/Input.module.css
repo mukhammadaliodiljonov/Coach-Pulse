@@ -1,0 +1,56 @@
+.shell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 56px;
+  padding: 0 16px;
+  border-radius: var(--radius-control);
+  background: var(--cp-surface);
+  border: 1px solid var(--cp-outline);
+  transition: border-color var(--dur-base) var(--ease);
+}
+
+.filled {
+  background: var(--cp-bg);
+  border-color: transparent;
+}
+
+.shell:focus-within {
+  border-color: var(--cp-primary);
+}
+
+.leftIcon {
+  color: var(--cp-primary);
+  display: flex;
+  flex-shrink: 0;
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: none;
+  background: transparent;
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--cp-text);
+}
+
+/* The shell's border shows focus instead. */
+.input:focus,
+.input:focus-visible {
+  outline: none;
+}
+
+.input::placeholder {
+  color: var(--cp-text-muted);
+}
+
+.trailing {
+  border: none;
+  background: none;
+  padding: 0;
+  color: var(--cp-text-muted);
+  display: flex;
+  flex-shrink: 0;
+}

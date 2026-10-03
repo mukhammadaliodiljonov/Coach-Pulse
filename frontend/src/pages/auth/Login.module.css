@@ -1,0 +1,170 @@
+.page {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
+  background: var(--cp-surface);
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 48px;
+  padding: 48px clamp(24px, 5vw, 72px);
+  border-radius: 0 0 36px 0;
+  background: var(--cp-primary);
+  color: #fff;
+}
+
+.panelLogo {
+  gap: 10px;
+}
+
+.pitch {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 460px;
+}
+
+.headline {
+  font-size: clamp(32px, 4vw, 44px);
+  line-height: 1.12;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  text-wrap: pretty;
+}
+
+.tagline {
+  font-size: 18px;
+  line-height: 1.5;
+  opacity: 0.92;
+}
+
+.disclaimer {
+  max-width: 420px;
+  font-size: 13px;
+  line-height: 1.5;
+  opacity: 0.85;
+}
+
+.formWrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+}
+
+.form {
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.heading {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.title {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.lead {
+  font-size: 15px;
+  color: var(--cp-text-muted);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px;
+}
+
+.remember {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.remember input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--cp-primary);
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--cp-text-muted);
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--cp-divider);
+}
+
+.google {
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border-radius: var(--radius-control);
+  border: 1px solid var(--cp-outline);
+  background: var(--cp-surface);
+  color: var(--cp-text);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.google:hover {
+  background: var(--cp-fill);
+}
+
+.signup {
+  text-align: center;
+  font-size: 14px;
+  color: var(--cp-text-muted);
+}
+
+.rule {
+  height: 1px;
+  background: var(--cp-divider);
+}
+
+.athlete {
+  align-self: center;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 48px;
+  padding: 0 20px;
+  border: none;
+  border-radius: var(--radius-control);
+  background: var(--cp-bg);
+  color: var(--cp-text);
+  font-size: 14px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.athlete:hover {
+  background: var(--cp-track);
+  color: var(--cp-text);
+  text-decoration: none;
+}
