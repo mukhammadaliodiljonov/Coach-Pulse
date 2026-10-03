@@ -40,7 +40,7 @@ public class AuthenticationService {
             throw new AuthenticationFailedException();
         }
 
-        String token = jwtTokenService.createToken(user.getId().toString());
+        String token = jwtTokenService.createToken(user.getId().toString(), user.getRole());
         return new LoginResponse(token, "Bearer", jwtTokenService.expiresInSeconds());
     }
 }
