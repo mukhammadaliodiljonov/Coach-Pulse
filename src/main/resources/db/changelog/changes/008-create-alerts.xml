@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+            https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="008-create-alerts" author="coach-pulse">
+        <createTable tableName="alerts">
+            <column name="id" type="UUID" defaultValueComputed="gen_random_uuid()">
+                <constraints primaryKey="true" primaryKeyName="pk_alerts"/>
+            </column>
+            <column name="risk_assessment_id" type="UUID">
+                <constraints nullable="false" foreignKeyName="fk_alerts_risk_assessment" referencedTableName="risk_assessments" referencedColumnNames="id" deleteCascade="true"/>
+            </column>
+            <column name="athlete_id" type="UUID">
+                <constraints nullable="false" foreignKeyName="fk_alerts_athlete" referencedTableName="athlete_profiles" referencedColumnNames="id" deleteCascade="true"/>
+            </column>
+            <column name="team_id" type="UUID">
+                <constraints nullable="false" foreignKeyName="fk_alerts_team" referencedTableName="teams" referencedColumnNames="id" deleteCascade="true"/>
+            </column>
+            <column name="status" type="VARCHAR(20)" defaultValue="OPEN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="acknowledged_by" type="UUID">
+                <constraints foreignKeyName="fk_alerts_acknowledged_by" referencedTableName="users" referencedColumnNames="id"/>
+            </column>
+            <column name="created_at" type="TIMESTAMPTZ" defaultValueComputed="now()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="acknowledged_at" type="TIMESTAMPTZ"/>
+        </createTable>
+
+        <sql>ALTER TABLE alerts ADD CONSTRAINT ck_alerts_status CHECK (status IN ('OPEN', 'ACKNOWLEDGED', 'RESOLVED'))</sql>
+
+        <createIndex tableName="alerts" indexName="ix_alerts_team_status">
+            <column name="team_id"/>
+            <column name="status"/>
+        </createIndex>
+        <createIndex tableName="alerts" indexName="ix_alerts_athlete">
+            <column name="athlete_id"/>
+        </createIndex>
+        <createIndex tableName="alerts" indexName="ix_alerts_risk_assessment">
+            <column name="risk_assessment_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

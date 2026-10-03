@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+            https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="006-create-workout-checkins" author="coach-pulse">
+        <createTable tableName="workout_checkins">
+            <column name="id" type="UUID" defaultValueComputed="gen_random_uuid()">
+                <constraints primaryKey="true" primaryKeyName="pk_workout_checkins"/>
+            </column>
+            <column name="athlete_id" type="UUID">
+                <constraints nullable="false" foreignKeyName="fk_workout_checkins_athlete" referencedTableName="athlete_profiles" referencedColumnNames="id" deleteCascade="true"/>
+            </column>
+            <column name="rpe" type="SMALLINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="duration_minutes" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="pre_weight_kg" type="NUMERIC(5,2)"/>
+            <column name="post_weight_kg" type="NUMERIC(5,2)"/>
+            <column name="headache" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="dizziness" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="light_sensitivity" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMPTZ" defaultValueComputed="now()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <sql>ALTER TABLE workout_checkins ADD CONSTRAINT ck_workout_checkins_rpe CHECK (rpe BETWEEN 1 AND 10)</sql>
+        <sql>ALTER TABLE workout_checkins ADD CONSTRAINT ck_workout_checkins_duration CHECK (duration_minutes &gt; 0)</sql>
+        <sql>ALTER TABLE workout_checkins ADD CONSTRAINT ck_workout_checkins_pre_weight CHECK (pre_weight_kg &gt; 0)</sql>
+        <sql>ALTER TABLE workout_checkins ADD CONSTRAINT ck_workout_checkins_post_weight CHECK (post_weight_kg &gt; 0)</sql>
+
+        <createIndex tableName="workout_checkins" indexName="ix_workout_checkins_athlete_created">
+            <column name="athlete_id"/>
+            <column name="created_at" descending="true"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>
