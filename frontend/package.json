@@ -9,7 +9,7 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "test": "vitest run",
-    "dev:api": "vite --mode api"
+    "dev:mock": "vite --mode mock"
   },
   "dependencies": {
     "react": "^19.2.8",

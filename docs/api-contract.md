@@ -5,7 +5,7 @@ app yet. The web app is built against it and keeps its sample data until the end
 
 - TypeScript mirror of every shape: [`frontend/src/api/types.ts`](../frontend/src/api/types.ts)
 - How the web app maps it onto screens: [`frontend/src/api/adapters.ts`](../frontend/src/api/adapters.ts)
-- Try the web app against a running backend: start Spring Boot on `:8080`, then `cd frontend && npm run dev:api`
+- Try the web app against a running backend: start Spring Boot on `:8080`, then `cd frontend && npm run dev`
   (the dev server proxies `/api` to `http://localhost:8080`, so no CORS setup is needed in development).
 
 ## Conventions
