@@ -24,3 +24,15 @@ privileged role. Passwords are stored as PBKDF2 hashes and are never included
 in the response. Success returns `201 Created`; invalid fields return `400`,
 and an email that is already registered returns `409` using the standard
 Problem Details response format.
+
+## Login and logout
+
+`POST /api/auth/login` accepts `email` and `password`. Successful login returns
+a signed bearer JWT in `accessToken` and its configured lifetime in
+`expiresIn` seconds. The token subject is the user's ID; passwords are not
+included in its claims. Invalid credentials return `401` with the same generic
+message whether the email is unknown or the password is wrong.
+
+`POST /api/auth/logout` returns `204 No Content`. JWTs are stateless, so logout
+means the client discards its token; a previously issued token remains valid
+until it expires. Clients should remove the token from local storage on logout.

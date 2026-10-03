@@ -87,6 +87,10 @@ public class UserAccount {
         return lastName;
     }
 
+    String getPasswordHash() {
+        return passwordHash;
+    }
+
     public UserRole getRole() {
         return role;
     }
