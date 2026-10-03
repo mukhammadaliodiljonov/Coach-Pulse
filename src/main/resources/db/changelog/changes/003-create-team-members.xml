@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+            https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="003-create-team-members" author="coach-pulse">
+        <createTable tableName="team_members">
+            <column name="id" type="UUID" defaultValueComputed="gen_random_uuid()">
+                <constraints primaryKey="true" primaryKeyName="pk_team_members"/>
+            </column>
+            <column name="team_id" type="UUID">
+                <constraints nullable="false" foreignKeyName="fk_team_members_team" referencedTableName="teams" referencedColumnNames="id" deleteCascade="true"/>
+            </column>
+            <column name="user_id" type="UUID">
+                <constraints nullable="false" foreignKeyName="fk_team_members_user" referencedTableName="users" referencedColumnNames="id" deleteCascade="true"/>
+            </column>
+            <column name="member_role" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="joined_at" type="TIMESTAMPTZ" defaultValueComputed="now()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addUniqueConstraint tableName="team_members" columnNames="team_id, user_id" constraintName="uq_team_members_team_user"/>
+
+        <createIndex tableName="team_members" indexName="ix_team_members_user">
+            <column name="user_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

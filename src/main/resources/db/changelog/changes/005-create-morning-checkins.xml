@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+            https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="005-create-morning-checkins" author="coach-pulse">
+        <createTable tableName="morning_checkins">
+            <column name="id" type="UUID" defaultValueComputed="gen_random_uuid()">
+                <constraints primaryKey="true" primaryKeyName="pk_morning_checkins"/>
+            </column>
+            <column name="athlete_id" type="UUID">
+                <constraints nullable="false" foreignKeyName="fk_morning_checkins_athlete" referencedTableName="athlete_profiles" referencedColumnNames="id" deleteCascade="true"/>
+            </column>
+            <column name="sleep_quality" type="SMALLINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="muscle_soreness" type="SMALLINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="fatigue" type="SMALLINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="overall_wellness" type="SMALLINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="notes" type="TEXT"/>
+            <column name="created_at" type="TIMESTAMPTZ" defaultValueComputed="now()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <sql>ALTER TABLE morning_checkins ADD CONSTRAINT ck_morning_checkins_sleep_quality CHECK (sleep_quality BETWEEN 1 AND 5)</sql>
+        <sql>ALTER TABLE morning_checkins ADD CONSTRAINT ck_morning_checkins_muscle_soreness CHECK (muscle_soreness BETWEEN 1 AND 5)</sql>
+        <sql>ALTER TABLE morning_checkins ADD CONSTRAINT ck_morning_checkins_fatigue CHECK (fatigue BETWEEN 1 AND 5)</sql>
+        <sql>ALTER TABLE morning_checkins ADD CONSTRAINT ck_morning_checkins_overall_wellness CHECK (overall_wellness BETWEEN 1 AND 5)</sql>
+
+        <createIndex tableName="morning_checkins" indexName="ix_morning_checkins_athlete_created">
+            <column name="athlete_id"/>
+            <column name="created_at" descending="true"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

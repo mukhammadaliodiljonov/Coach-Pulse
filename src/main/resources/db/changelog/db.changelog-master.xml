@@ -5,4 +5,13 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
             https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
+    <include file="changes/001-create-users.xml" relativeToChangelogFile="true"/>
+    <include file="changes/002-create-teams.xml" relativeToChangelogFile="true"/>
+    <include file="changes/003-create-team-members.xml" relativeToChangelogFile="true"/>
+    <include file="changes/004-create-athlete-profiles.xml" relativeToChangelogFile="true"/>
+    <include file="changes/005-create-morning-checkins.xml" relativeToChangelogFile="true"/>
+    <include file="changes/006-create-workout-checkins.xml" relativeToChangelogFile="true"/>
+    <include file="changes/007-create-risk-assessments.xml" relativeToChangelogFile="true"/>
+    <include file="changes/008-create-alerts.xml" relativeToChangelogFile="true"/>
+
 </databaseChangeLog>

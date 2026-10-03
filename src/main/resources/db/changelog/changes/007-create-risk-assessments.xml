@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+            https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="007-create-risk-assessments" author="coach-pulse">
+        <createTable tableName="risk_assessments">
+            <column name="id" type="UUID" defaultValueComputed="gen_random_uuid()">
+                <constraints primaryKey="true" primaryKeyName="pk_risk_assessments"/>
+            </column>
+            <column name="athlete_id" type="UUID">
+                <constraints nullable="false" foreignKeyName="fk_risk_assessments_athlete" referencedTableName="athlete_profiles" referencedColumnNames="id" deleteCascade="true"/>
+            </column>
+            <column name="risk_score" type="SMALLINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="risk_status" type="VARCHAR(10)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="reason_codes" type="JSONB" defaultValueComputed="'{}'::jsonb">
+                <constraints nullable="false"/>
+            </column>
+            <column name="engine_version" type="VARCHAR(30)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMPTZ" defaultValueComputed="now()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <sql>ALTER TABLE risk_assessments ADD CONSTRAINT ck_risk_assessments_score CHECK (risk_score BETWEEN 0 AND 100)</sql>
+        <sql>ALTER TABLE risk_assessments ADD CONSTRAINT ck_risk_assessments_status CHECK (risk_status IN ('GREEN', 'YELLOW', 'RED'))</sql>
+
+        <createIndex tableName="risk_assessments" indexName="ix_risk_assessments_athlete_created">
+            <column name="athlete_id"/>
+            <column name="created_at" descending="true"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+            https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="004-create-athlete-profiles" author="coach-pulse">
+        <createTable tableName="athlete_profiles">
+            <column name="id" type="UUID" defaultValueComputed="gen_random_uuid()">
+                <constraints primaryKey="true" primaryKeyName="pk_athlete_profiles"/>
+            </column>
+            <column name="user_id" type="UUID">
+                <constraints nullable="false" unique="true" uniqueConstraintName="uq_athlete_profiles_user"
+                             foreignKeyName="fk_athlete_profiles_user" referencedTableName="users" referencedColumnNames="id" deleteCascade="true"/>
+            </column>
+            <column name="date_of_birth" type="DATE"/>
+            <column name="height_cm" type="NUMERIC(5,2)"/>
+            <column name="baseline_weight_kg" type="NUMERIC(5,2)"/>
+            <column name="created_at" type="TIMESTAMPTZ" defaultValueComputed="now()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMPTZ" defaultValueComputed="now()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <sql>ALTER TABLE athlete_profiles ADD CONSTRAINT ck_athlete_profiles_height CHECK (height_cm &gt; 0)</sql>
+        <sql>ALTER TABLE athlete_profiles ADD CONSTRAINT ck_athlete_profiles_baseline_weight CHECK (baseline_weight_kg &gt; 0)</sql>
+    </changeSet>
+
+</databaseChangeLog>
