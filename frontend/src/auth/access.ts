@@ -37,7 +37,7 @@ export function decideRoute(session: Session | null, area: AppArea, now = Date.n
   return { kind: 'allow' }
 }
 
-const PUBLIC_PATHS: readonly string[] = [paths.login, paths.setup, paths.athleteApp.login, paths.athleteApp.join]
+const PUBLIC_PATHS: readonly string[] = [paths.login, paths.signup, paths.setup, paths.athleteApp.login, paths.athleteApp.join]
 
 /**
  * Where to go after signing in: back to the page that asked for sign-in when this role may see it,

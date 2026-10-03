@@ -4,9 +4,9 @@ import { useSignInForm } from '../../auth/useSignInForm'
 import { Button } from '../../components/ui/Button'
 import { Icon } from '../../components/ui/Icon'
 import { Input } from '../../components/ui/Input'
-import { Logo } from '../../components/ui/Logo'
 import { useTitle } from '../../lib/useTitle'
 import { paths } from '../../navigation/paths'
+import { AuthPanel } from './AuthPanel'
 import ui from '../../styles/ui.module.css'
 import styles from './Login.module.css'
 
@@ -20,16 +20,7 @@ export function Login() {
 
   return (
     <div className={styles.page}>
-      <div className={styles.panel}>
-        <Logo size={36} wordmarkSize={22} inverted wordmark="plain" className={styles.panelLogo} />
-        <div className={styles.pitch}>
-          <h1 className={styles.headline}>Healthier athletes. Safer teams. Smarter decisions.</h1>
-          <p className={styles.tagline}>A simple safety layer for youth and amateur teams.</p>
-        </div>
-        <p className={styles.disclaimer}>
-          CoachPulse highlights changes in wellbeing and training load. It doesn’t diagnose medical conditions.
-        </p>
-      </div>
+      <AuthPanel />
       <div className={styles.formWrap}>
         <form
           className={styles.form}
@@ -89,7 +80,8 @@ export function Login() {
             </>
           )}
           <p className={styles.signup}>
-            Don’t have an account? <Link to={paths.setup}>Create team</Link>
+            Don’t have an account?{' '}
+            {required ? <Link to={paths.signup}>Create account</Link> : <Link to={paths.setup}>Create team</Link>}
           </p>
           <div className={styles.rule} />
           <Link to={paths.athleteApp.login} className={styles.athlete}>

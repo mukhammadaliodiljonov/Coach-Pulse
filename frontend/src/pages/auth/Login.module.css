@@ -178,3 +178,15 @@
   font-weight: 700;
   line-height: 1.45;
 }
+
+.names {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 20px;
+}
+
+.hint {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--cp-text-muted);
+}

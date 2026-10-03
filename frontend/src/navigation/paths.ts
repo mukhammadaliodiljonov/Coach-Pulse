@@ -16,6 +16,7 @@ export const paths = {
   reports: '/reports',
   settings: '/settings',
   login: '/login',
+  signup: '/signup',
   setup: '/setup',
   athleteApp: {
     home: '/athlete',

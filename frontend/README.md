@@ -31,7 +31,8 @@ come later (sessions, trends, reports, settings, team setup, sign-in) as sample 
 ### Sign-in and protected routes
 
 With the backend, both apps need a real sign-in (`POST /api/auth/login`); with sample data they stay an open
-demo. The code is in `src/auth/`:
+demo. Coaches create an account at `/signup` (`POST /api/auth/register`, then signed in automatically). Athletes
+can't sign up yet: the backend has no athlete registration or team-code join. The code is in `src/auth/`:
 
 - **Session**: the JWT from login is kept in `sessionStorage` for this tab only. It survives a reload and is cleared
   when the tab closes, on log out, when the token expires (a timer at its `exp`), and when the API answers `401`.
@@ -39,7 +40,7 @@ demo. The code is in `src/auth/`:
 - **API requests** send it as `Authorization: Bearer <token>`, never in URLs or bodies.
 - **Routes**: coach pages need a `COACH` or `ADMIN` account and athlete pages an `ATHLETE` one. Signed-out users go
   to the matching sign-in page and come back afterwards; users outside a page's role go to their own home.
-  `/login`, `/setup`, `/athlete/login` and `/athlete/join` are public.
+  `/login`, `/signup`, `/setup`, `/athlete/login` and `/athlete/join` are public.
 - The role is read from the token without verifying it, which is fine for choosing screens: **the backend verifies
   the token and enforces roles on every request.** Hiding a page here is not a security boundary.
 
@@ -65,7 +66,7 @@ With `npm run dev:mock`, append `?scenario=` to the first URL you open:
 | `/alerts?filter=` | Alerts | `/athlete/check-in/daily` | Daily check-in |
 | `/alerts/:id` | Alert detail | `/athlete/check-in/post` | Post-training check-in |
 | `/training` `/trends` `/reports` `/settings` | | `/athlete/history` `/schedule` `/profile` | |
-| `/login` `/setup` | Sign in, team setup | | |
+| `/login` `/signup` `/setup` | Sign in, create account, team setup | | |
 
 The athlete app renders in a 390×780 phone frame on wide screens and full screen below 520px.
 

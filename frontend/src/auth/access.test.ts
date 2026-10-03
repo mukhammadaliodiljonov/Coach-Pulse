@@ -47,6 +47,7 @@ describe('afterSignIn', () => {
   it('ignores missing, sign-in and off-site destinations', () => {
     expect(afterSignIn('COACH', undefined)).toBe('/')
     expect(afterSignIn('COACH', '/login')).toBe('/')
+    expect(afterSignIn('COACH', '/signup')).toBe('/')
     expect(afterSignIn('ATHLETE', '/athlete/login')).toBe('/athlete')
     expect(afterSignIn('COACH', 'https://evil.example/')).toBe('/')
     expect(afterSignIn('COACH', '//evil.example/')).toBe('/')

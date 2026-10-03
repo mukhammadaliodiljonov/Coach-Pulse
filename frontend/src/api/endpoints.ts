@@ -11,6 +11,8 @@ import type {
   MeDto,
   MorningCheckinDto,
   MorningCheckinRequest,
+  RegistrationRequest,
+  RegistrationResponse,
   RecordActionRequest,
   TeamDayDto,
   TeamDto,
@@ -23,6 +25,9 @@ import type {
 const id = encodeURIComponent
 
 export const api = {
+  register: (body: RegistrationRequest) =>
+    apiRequest<RegistrationResponse>('/auth/register', { method: 'POST', body }),
+
   login: (body: LoginRequest) => apiRequest<LoginResponse>('/auth/login', { method: 'POST', body }),
 
   logout: () => apiRequest<void>('/auth/logout', { method: 'POST' }),
