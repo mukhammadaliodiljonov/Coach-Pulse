@@ -12,6 +12,7 @@ import { AthleteSchedule } from './pages/athlete/AthleteSchedule'
 import { AthleteSelfProfile } from './pages/athlete/AthleteSelfProfile'
 import { CheckInFlow } from './pages/athlete/CheckInFlow'
 import { Login } from './pages/auth/Login'
+import { SignUp } from './pages/auth/SignUp'
 import { TeamSetup } from './pages/auth/TeamSetup'
 import { AlertDetail } from './pages/coach/AlertDetail'
 import { Alerts } from './pages/coach/Alerts'
@@ -30,7 +31,13 @@ export const router = createBrowserRouter([
     element: <RootLayout />,
     errorElement: <RouteError />,
     children: [
-      { element: <RedirectIfSignedIn />, children: [{ path: 'login', element: <Login /> }] },
+      {
+        element: <RedirectIfSignedIn />,
+        children: [
+          { path: 'login', element: <Login /> },
+          { path: 'signup', element: <SignUp /> },
+        ],
+      },
       { path: 'setup', element: <TeamSetup /> },
       {
         path: 'athlete',

@@ -51,6 +51,24 @@ export interface TeamMembershipDto {
   memberRole: MemberRole
 }
 
+/** POST /api/auth/register — new accounts are coaches. */
+export interface RegistrationRequest {
+  email: string
+  /** 8–128 characters. */
+  password: string
+  firstName: string
+  lastName: string
+}
+
+export interface RegistrationResponse {
+  id: Uuid
+  email: string
+  firstName: string
+  lastName: string
+  role: UserRole
+  createdAt: IsoDateTime
+}
+
 /** POST /api/auth/login */
 export interface LoginRequest {
   email: string
