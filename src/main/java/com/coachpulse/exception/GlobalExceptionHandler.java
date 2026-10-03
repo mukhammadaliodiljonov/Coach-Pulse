@@ -30,6 +30,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
+	@ExceptionHandler(AuthenticationFailedException.class)
+	public ProblemDetail handleAuthenticationFailed(AuthenticationFailedException ex) {
+		return problem(HttpStatus.UNAUTHORIZED, ex.getMessage());
+	}
+
 	@ExceptionHandler(ResourceNotFoundException.class)
 	public ProblemDetail handleNotFound(ResourceNotFoundException ex) {
 		return problem(HttpStatus.NOT_FOUND, ex.getMessage());

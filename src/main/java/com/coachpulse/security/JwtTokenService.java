@@ -42,4 +42,8 @@ public class JwtTokenService {
         JwsHeader header = JwsHeader.with(MacAlgorithm.HS256).build();
         return jwtEncoder.encode(JwtEncoderParameters.from(header, claims)).getTokenValue();
     }
+
+    public long expiresInSeconds() {
+        return expiration.toSeconds();
+    }
 }
