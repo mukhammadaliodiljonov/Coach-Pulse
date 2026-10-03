@@ -11,9 +11,18 @@ export JWT_SECRET="$(openssl rand -base64 32)"
 
 JWTs use HS256 and expire after 15 minutes by default. Set
 `app.security.jwt.expiration` to another ISO-8601 duration to change the
-lifetime. Tokens contain only the subject, issued-at time, and expiration time.
-Bearer tokens are validated by Spring Security; endpoint authorization will be
-added separately.
+lifetime. Tokens contain only the subject (user ID), the user's `role`, the
+issued-at time, and the expiration time. Bearer tokens are validated by Spring
+Security; endpoint authorization will be added separately.
+
+## User roles
+
+CoachPulse roles are defined in `UserRole`: `ATHLETE`, `COACH`, and `ADMIN`.
+They match the `ck_users_role` database constraint, so every user has exactly
+one valid role. Login puts the role in the JWT `role` claim. A bearer token
+whose role is missing or not one of these exact names is rejected with `401`.
+For valid tokens the role is available to authorization logic as the authority
+`ROLE_<NAME>` (for example `ROLE_COACH`, usable with `hasRole("COACH")`).
 
 ## User registration
 

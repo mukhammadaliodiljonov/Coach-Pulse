@@ -3,6 +3,7 @@ package com.coachpulse.security;
 import java.time.Duration;
 import java.time.Instant;
 
+import com.coachpulse.user.UserRole;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.JwsHeader;
@@ -13,6 +14,8 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class JwtTokenService {
+
+    public static final String ROLE_CLAIM = "role";
 
     private final JwtEncoder jwtEncoder;
     private final Duration expiration;
@@ -27,9 +30,12 @@ public class JwtTokenService {
         this.expiration = expiration;
     }
 
-    public String createToken(String subject) {
+    public String createToken(String subject, UserRole role) {
         if (subject == null || subject.isBlank()) {
             throw new IllegalArgumentException("JWT subject must not be blank");
+        }
+        if (role == null) {
+            throw new IllegalArgumentException("JWT role must not be null");
         }
 
         Instant issuedAt = Instant.now();
@@ -37,6 +43,7 @@ public class JwtTokenService {
                 .subject(subject)
                 .issuedAt(issuedAt)
                 .expiresAt(issuedAt.plus(expiration))
+                .claim(ROLE_CLAIM, role.name())
                 .build();
 
         JwsHeader header = JwsHeader.with(MacAlgorithm.HS256).build();
