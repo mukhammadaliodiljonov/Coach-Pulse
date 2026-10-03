@@ -51,6 +51,20 @@ export interface TeamMembershipDto {
   memberRole: MemberRole
 }
 
+/** POST /api/auth/login */
+export interface LoginRequest {
+  email: string
+  password: string
+}
+
+export interface LoginResponse {
+  /** A signed JWT whose claims are sub (user id), role, iat and exp. */
+  accessToken: string
+  tokenType: 'Bearer'
+  /** Seconds. */
+  expiresIn: number
+}
+
 /** GET /api/me */
 export interface MeDto {
   user: UserDto

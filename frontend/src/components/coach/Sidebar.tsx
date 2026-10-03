@@ -1,3 +1,4 @@
+import { useAuth } from '../../auth/useAuth'
 import { NavLink, useNavigate } from 'react-router'
 import { cx } from '../../lib/cx'
 import { paths } from '../../navigation/paths'
@@ -24,6 +25,7 @@ export function Sidebar() {
   const { status, team, teamInfo, coach, actions } = useCoachStore()
   const athleteApp = useAthleteStore()
   const navigate = useNavigate()
+  const { signOut, required: authRequired } = useAuth()
   const openAlerts = team.flagged.filter((a) => !actions[a.id]).length
 
   return (
@@ -50,18 +52,21 @@ export function Sidebar() {
         ))}
       </nav>
       <div className={styles.spacer} />
-      <button
-        type="button"
-        className={styles.preview}
-        title="Open athlete check-in"
-        onClick={() => {
-          void athleteApp.signIn()
-          navigate(paths.athleteApp.home)
-        }}
-      >
-        <Icon name="phone" size={17} />
-        <span className={styles.previewLabel}>Preview athlete check-in</span>
-      </button>
+      {/* Previewing the athlete app is a sample-data demo; a coach account can't open athlete pages. */}
+      {!authRequired && (
+        <button
+          type="button"
+          className={styles.preview}
+          title="Open athlete check-in"
+          onClick={() => {
+            void athleteApp.signIn()
+            navigate(paths.athleteApp.home)
+          }}
+        >
+          <Icon name="phone" size={17} />
+          <span className={styles.previewLabel}>Preview athlete check-in</span>
+        </button>
+      )}
       <div className={styles.account}>
         {status === 'ready' && (
           <div className={styles.coach}>
@@ -78,7 +83,10 @@ export function Sidebar() {
           <button type="button" onClick={() => navigate(paths.settings)}>
             Notifications
           </button>
-          <button type="button" onClick={() => navigate(paths.login)}>
+          <button type="button" onClick={() => {
+            signOut()
+            navigate(paths.login)
+          }}>
             Log out
           </button>
         </div>

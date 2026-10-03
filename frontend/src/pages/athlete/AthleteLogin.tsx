@@ -1,4 +1,6 @@
 import { useNavigate } from 'react-router'
+import { useAuth } from '../../auth/useAuth'
+import { useSignInForm } from '../../auth/useSignInForm'
 import { Button, ButtonLink } from '../../components/ui/Button'
 import { Input } from '../../components/ui/Input'
 import { LogoMark } from '../../components/ui/Logo'
@@ -8,19 +10,24 @@ import { useAthleteStore } from '../../state/athleteStore'
 import ui from '../../styles/ui.module.css'
 import styles from './athlete.module.css'
 
-// Authentication is mocked until the backend exists.
+// With the backend, this signs in for real (see useSignInForm). With sample data it opens the demo athlete.
 export function AthleteLogin() {
   useTitle('Athlete sign in')
-  const { signIn, loading, error } = useAthleteStore()
+  const demo = useAthleteStore()
+  const { required } = useAuth()
+  const backend = useSignInForm()
   const navigate = useNavigate()
+  const error = required ? backend.message : demo.error
+  const busy = required ? backend.submitting : demo.loading
 
   return (
     <div className={styles.scroll}>
       <form
         className={styles.auth}
         onSubmit={async (e) => {
+          if (required) return backend.onSubmit(e)
           e.preventDefault()
-          if (await signIn()) navigate(paths.athleteApp.home)
+          if (await demo.signIn()) navigate(paths.athleteApp.home)
         }}
       >
         <LogoMark size={52} />
@@ -29,20 +36,34 @@ export function AthleteLogin() {
           <p className={styles.lead}>Sign in to do your check-ins. It takes under a minute.</p>
         </div>
         <label className={ui.field}>
-          Email or phone
-          <Input leftIcon="email" placeholder="alex@example.com" autoComplete="username" />
+          {required ? 'Email' : 'Email or phone'}
+          <Input
+            name="email"
+            type={required ? 'email' : 'text'}
+            required={required}
+            leftIcon="email"
+            placeholder="alex@example.com"
+            autoComplete="username"
+          />
         </label>
         <label className={ui.field}>
           Password
-          <Input type="password" leftIcon="lock" placeholder="Enter password" autoComplete="current-password" />
+          <Input
+            name="password"
+            type="password"
+            required={required}
+            leftIcon="lock"
+            placeholder="Enter password"
+            autoComplete="current-password"
+          />
         </label>
         {error && (
           <p className={styles.error} role="alert">
             {error}
           </p>
         )}
-        <Button type="submit" fullWidth disabled={loading}>
-          {loading ? 'Signing in…' : 'Sign in'}
+        <Button type="submit" fullWidth disabled={busy}>
+          {busy ? 'Signing in…' : 'Sign in'}
         </Button>
         <div className={styles.grow} />
         <div className={styles.newTeam}>

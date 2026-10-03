@@ -1,3 +1,4 @@
+import { useAuth } from '../../auth/useAuth'
 import { useRef, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { Avatar } from '../../components/ui/Avatar'
@@ -30,6 +31,7 @@ export function Settings() {
   useTitle('Settings')
   const { prefs, togglePref, showToast, teamInfo, coach } = useCoachStore()
   const navigate = useNavigate()
+  const { signOut } = useAuth()
   const fileRef = useRef<HTMLInputElement>(null)
   const [protocol, setProtocol] = useState({
     name: 'Northside FC welfare & head-injury protocol',
@@ -129,7 +131,10 @@ export function Settings() {
           <Button size="sm" variant="outline">
             Change password
           </Button>
-          <Button size="sm" variant="ghost" onClick={() => navigate(paths.login)}>
+          <Button size="sm" variant="ghost" onClick={() => {
+            signOut()
+            navigate(paths.login)
+          }}>
             Log out
           </Button>
         </div>

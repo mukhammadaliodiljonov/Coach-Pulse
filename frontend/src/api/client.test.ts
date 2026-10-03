@@ -1,10 +1,15 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { endSession, getAuthState, startSession } from '../auth/session'
+import { fakeToken, inMinutes } from '../auth/testTokens'
 import { ApiError, apiRequest, describeError } from './client'
 
 const json = (status: number, body: unknown, contentType = 'application/json') =>
   new Response(JSON.stringify(body), { status, headers: { 'Content-Type': contentType } })
 
-afterEach(() => vi.unstubAllGlobals())
+afterEach(() => {
+  vi.unstubAllGlobals()
+  endSession('signed-out')
+})
 
 describe('apiRequest', () => {
   it('sends JSON and returns the parsed body', async () => {
@@ -53,3 +58,42 @@ describe('apiRequest', () => {
     expect(describeError(error)).toMatch(/Couldn’t reach the CoachPulse server/)
   })
 })
+
+describe('apiRequest authentication', () => {
+  it('sends no Authorization header when signed out', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(json(200, {}))
+    vi.stubGlobal('fetch', fetchMock)
+
+    await apiRequest('/me')
+    expect(fetchMock.mock.calls[0][1].headers).not.toHaveProperty('Authorization')
+  })
+
+  it('sends the session’s JWT as a bearer token', async () => {
+    const token = fakeToken({ sub: 'u1', role: 'COACH', exp: inMinutes(15) })
+    startSession(token)
+    const fetchMock = vi.fn().mockResolvedValue(json(200, {}))
+    vi.stubGlobal('fetch', fetchMock)
+
+    await apiRequest('/me')
+    const [url, init] = fetchMock.mock.calls[0]
+    expect(url).toBe('/api/me')
+    expect(init.headers).toMatchObject({ Authorization: `Bearer ${token}` })
+  })
+
+  it('ends the session when the server rejects the token', async () => {
+    startSession(fakeToken({ sub: 'u1', role: 'COACH', exp: inMinutes(15) }))
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(null, { status: 401 })))
+
+    await expect(apiRequest('/me')).rejects.toMatchObject({ status: 401 })
+    expect(getAuthState()).toEqual({ session: null, ended: 'expired' })
+  })
+
+  it('keeps the session on a 403: the user is signed in but not allowed', async () => {
+    startSession(fakeToken({ sub: 'u1', role: 'ATHLETE', exp: inMinutes(15) }))
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(json(403, { status: 403, detail: 'Forbidden' })))
+
+    await expect(apiRequest('/teams/t1')).rejects.toMatchObject({ status: 403 })
+    expect(getAuthState().session).not.toBeNull()
+  })
+})
+

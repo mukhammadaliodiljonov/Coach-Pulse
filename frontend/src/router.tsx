@@ -1,5 +1,6 @@
 import { createBrowserRouter, Navigate } from 'react-router'
-import { CoachLayout } from './components/coach/CoachLayout'
+import { RedirectIfSignedIn, RequireArea } from './auth/RouteGuards'
+import { CoachApp } from './components/coach/CoachLayout'
 import { RootLayout } from './components/RootLayout'
 import { RouteError } from './components/RouteError'
 import { AthleteHistory } from './pages/athlete/AthleteHistory'
@@ -22,47 +23,59 @@ import { Settings } from './pages/coach/Settings'
 import { Training } from './pages/coach/Training'
 import { Trends } from './pages/coach/Trends'
 
+// Coach pages need a COACH or ADMIN sign-in and athlete pages an ATHLETE one (see auth/access.ts);
+// the backend enforces the same on every request.
 export const router = createBrowserRouter([
   {
     element: <RootLayout />,
     errorElement: <RouteError />,
     children: [
-      { path: 'login', element: <Login /> },
+      { element: <RedirectIfSignedIn />, children: [{ path: 'login', element: <Login /> }] },
       { path: 'setup', element: <TeamSetup /> },
       {
         path: 'athlete',
         element: <AthleteLayout />,
         children: [
-          { path: 'login', element: <AthleteLogin /> },
+          { element: <RedirectIfSignedIn />, children: [{ path: 'login', element: <AthleteLogin /> }] },
           { path: 'join', element: <AthleteJoin /> },
           {
-            element: <AthleteTabs />,
+            element: <RequireArea area="athlete" />,
             children: [
-              { index: true, element: <AthleteHome /> },
-              { path: 'history', element: <AthleteHistory /> },
-              { path: 'schedule', element: <AthleteSchedule /> },
-              { path: 'profile', element: <AthleteSelfProfile /> },
+              {
+                element: <AthleteTabs />,
+                children: [
+                  { index: true, element: <AthleteHome /> },
+                  { path: 'history', element: <AthleteHistory /> },
+                  { path: 'schedule', element: <AthleteSchedule /> },
+                  { path: 'profile', element: <AthleteSelfProfile /> },
+                ],
+              },
+              {
+                element: <RequireAthlete />,
+                children: [{ path: 'check-in/:flow', element: <CheckInFlow /> }],
+              },
             ],
-          },
-          {
-            element: <RequireAthlete />,
-            children: [{ path: 'check-in/:flow', element: <CheckInFlow /> }],
           },
         ],
       },
       {
-        element: <CoachLayout />,
+        element: <RequireArea area="coach" />,
         children: [
-          { index: true, element: <Overview /> },
-          { path: 'athletes', element: <Athletes /> },
-          { path: 'athletes/:athleteId', element: <AthleteProfile /> },
-          { path: 'alerts', element: <Alerts /> },
-          { path: 'alerts/:athleteId', element: <AlertDetail /> },
-          { path: 'training', element: <Training /> },
-          { path: 'trends', element: <Trends /> },
-          { path: 'reports', element: <Reports /> },
-          { path: 'settings', element: <Settings /> },
-          { path: '*', element: <Navigate to="/" replace /> },
+          {
+            element: <CoachApp />,
+            children: [
+              { index: true, element: <Overview /> },
+              { path: 'athletes', element: <Athletes /> },
+              { path: 'athletes/:athleteId', element: <AthleteProfile /> },
+              { path: 'alerts', element: <Alerts /> },
+              { path: 'alerts/:athleteId', element: <AlertDetail /> },
+              { path: 'training', element: <Training /> },
+              { path: 'trends', element: <Trends /> },
+              { path: 'reports', element: <Reports /> },
+              { path: 'settings', element: <Settings /> },
+              { path: '*', element: <Navigate to="/" replace /> },
+            ],
+          },
         ],
       },
     ],
