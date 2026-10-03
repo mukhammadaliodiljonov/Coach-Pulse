@@ -1,3 +1,4 @@
+import { currentToken, endSession } from '../auth/session'
 import type { ProblemDetail } from './types'
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '/api'
@@ -40,6 +41,8 @@ interface RequestOptions {
 }
 
 export async function apiRequest<T>(path: string, { method = 'GET', body, signal }: RequestOptions = {}): Promise<T> {
+  // The JWT goes in the Authorization header only, never in URLs or bodies.
+  const token = currentToken()
   let response: Response
   try {
     response = await fetch(`${BASE_URL}${path}`, {
@@ -49,6 +52,7 @@ export async function apiRequest<T>(path: string, { method = 'GET', body, signal
       headers: {
         Accept: 'application/json',
         ...(body === undefined ? {} : { 'Content-Type': 'application/json' }),
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
       body: body === undefined ? undefined : JSON.stringify(body),
     })
@@ -56,6 +60,9 @@ export async function apiRequest<T>(path: string, { method = 'GET', body, signal
     if (signal?.aborted) throw error
     throw new ApiError('Couldn’t reach the CoachPulse server.', 0)
   }
+
+  // The server rejected our token (expired, revoked secret, tampered): sign out so the app asks again.
+  if (response.status === 401 && token) endSession('expired')
 
   if (!response.ok) {
     const problem = await readProblem(response)

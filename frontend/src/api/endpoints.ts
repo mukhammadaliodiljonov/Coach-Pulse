@@ -6,6 +6,8 @@ import type {
   AthleteTodayDto,
   CheckinDayDto,
   CoachActionDto,
+  LoginRequest,
+  LoginResponse,
   MeDto,
   MorningCheckinDto,
   MorningCheckinRequest,
@@ -21,6 +23,10 @@ import type {
 const id = encodeURIComponent
 
 export const api = {
+  login: (body: LoginRequest) => apiRequest<LoginResponse>('/auth/login', { method: 'POST', body }),
+
+  logout: () => apiRequest<void>('/auth/logout', { method: 'POST' }),
+
   getMe: (signal?: AbortSignal) => apiRequest<MeDto>('/me', { signal }),
 
   getTeam: (teamId: string, signal?: AbortSignal) => apiRequest<TeamDto>(`/teams/${id(teamId)}`, { signal }),

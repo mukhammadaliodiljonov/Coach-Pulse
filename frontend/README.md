@@ -28,6 +28,21 @@ The backend doesn't have these endpoints yet: the contract the app expects is in
 the app shows real loading, error and offline states, refreshes every minute, and marks the screens whose endpoints
 come later (sessions, trends, reports, settings, team setup, sign-in) as sample data.
 
+### Sign-in and protected routes (backend mode)
+
+With the backend, both apps need a real sign-in (`POST /api/auth/login`); with sample data they stay an open
+demo. The code is in `src/auth/`:
+
+- **Session**: the JWT from login is kept in `sessionStorage` for this tab only. It survives a reload and is cleared
+  when the tab closes, on log out, when the token expires (a timer at its `exp`), and when the API answers `401`.
+  The sign-in page then says the session expired.
+- **API requests** send it as `Authorization: Bearer <token>`, never in URLs or bodies.
+- **Routes**: coach pages need a `COACH` or `ADMIN` account and athlete pages an `ATHLETE` one. Signed-out users go
+  to the matching sign-in page and come back afterwards; users outside a page's role go to their own home.
+  `/login`, `/setup`, `/athlete/login` and `/athlete/join` are public.
+- The role is read from the token without verifying it, which is fine for choosing screens: **the backend verifies
+  the token and enforces roles on every request.** Hiding a page here is not a security boundary.
+
 ### Demo scenarios (sample data)
 
 Append `?scenario=` to the first URL you open:

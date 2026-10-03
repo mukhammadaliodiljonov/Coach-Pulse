@@ -1,3 +1,4 @@
+import { useAuth } from '../../auth/useAuth'
 import { useNavigate } from 'react-router'
 import { Avatar } from '../../components/ui/Avatar'
 import { Button } from '../../components/ui/Button'
@@ -12,6 +13,7 @@ import styles from './athlete.module.css'
 export function AthleteSelfProfile() {
   useTitle('Profile')
   const { snapshot, reminders, toggleReminder, signOut } = useAthleteStore()
+  const auth = useAuth()
   const navigate = useNavigate()
   if (!snapshot) return null
   const { profile } = snapshot
@@ -56,6 +58,7 @@ export function AthleteSelfProfile() {
         fullWidth
         onClick={() => {
           signOut()
+          auth.signOut()
           navigate(paths.athleteApp.login)
         }}
       >

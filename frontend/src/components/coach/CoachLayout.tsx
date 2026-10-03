@@ -1,5 +1,6 @@
 import { Outlet } from 'react-router'
 import { useCoachStore } from '../../state/coachStore'
+import { CoachStoreProvider } from '../../state/CoachStoreProvider'
 import { Toast } from '../ui/Toast'
 import { AssistantDrawer } from './AssistantDrawer'
 import { BottomNav } from './BottomNav'
@@ -9,7 +10,16 @@ import { RecordActionModal } from './RecordActionModal'
 import { Sidebar } from './Sidebar'
 import { TopBar } from './TopBar'
 
-export function CoachLayout() {
+/** The coach app. Its data loads only once a coach has reached it, i.e. after sign-in. */
+export function CoachApp() {
+  return (
+    <CoachStoreProvider>
+      <CoachLayout />
+    </CoachStoreProvider>
+  )
+}
+
+function CoachLayout() {
   const { status, offline, toast } = useCoachStore()
   return (
     <div className={styles.shell}>

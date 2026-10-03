@@ -168,3 +168,13 @@
   color: var(--cp-text);
   text-decoration: none;
 }
+
+.error {
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--cp-high-bg);
+  color: var(--cp-high-fg);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.45;
+}
