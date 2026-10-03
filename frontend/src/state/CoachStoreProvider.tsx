@@ -3,7 +3,7 @@ import { describeError, isUnreachable } from '../api/client'
 import { summarizeTeam } from '../domain/team'
 import type { Athlete, CoachAction, CoachInfo, TeamInfo } from '../domain/types'
 import { createCoachSource, DATA_SOURCE } from '../sources'
-import type { CoachSnapshot } from '../sources/types'
+import { NoTeamError, type CoachSnapshot } from '../sources/types'
 import { CoachStoreContext, type CoachPrefs, type CoachStore, type LoadStatus, type Toast } from './coachStore'
 import { readScenario } from './scenario'
 
@@ -43,7 +43,7 @@ export function CoachStoreProvider({ children }: { children: ReactNode }) {
           if (isUnreachable(error)) setOffline(true)
           return false
         }
-        setStatus('error')
+        setStatus(error instanceof NoTeamError ? 'no-team' : 'error')
         setLoadError(describeError(error))
         return false
       }

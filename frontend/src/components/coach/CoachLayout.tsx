@@ -5,7 +5,7 @@ import { Toast } from '../ui/Toast'
 import { AssistantDrawer } from './AssistantDrawer'
 import { BottomNav } from './BottomNav'
 import styles from './CoachLayout.module.css'
-import { LoadError, OfflineBanner, PageSkeleton } from './LoadStates'
+import { LoadError, NoTeam, OfflineBanner, PageSkeleton } from './LoadStates'
 import { RecordActionModal } from './RecordActionModal'
 import { Sidebar } from './Sidebar'
 import { TopBar } from './TopBar'
@@ -31,7 +31,15 @@ function CoachLayout() {
         <TopBar />
         {offline && <OfflineBanner />}
         {/* Pages render once the team's data has loaded. */}
-        {status === 'loading' ? <PageSkeleton /> : status === 'error' ? <LoadError /> : <Outlet />}
+        {status === 'loading' ? (
+          <PageSkeleton />
+        ) : status === 'error' ? (
+          <LoadError />
+        ) : status === 'no-team' ? (
+          <NoTeam />
+        ) : (
+          <Outlet />
+        )}
       </main>
       <BottomNav />
       {status === 'ready' && (

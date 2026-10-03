@@ -6,6 +6,7 @@ import type {
   AthleteTodayDto,
   CheckinDayDto,
   CoachActionDto,
+  CreateTeamRequest,
   LoginRequest,
   LoginResponse,
   MeDto,
@@ -33,6 +34,8 @@ export const api = {
   logout: () => apiRequest<void>('/auth/logout', { method: 'POST' }),
 
   getMe: (signal?: AbortSignal) => apiRequest<MeDto>('/me', { signal }),
+
+  createTeam: (body: CreateTeamRequest) => apiRequest<TeamDto>('/teams', { method: 'POST', body }),
 
   getTeam: (teamId: string, signal?: AbortSignal) => apiRequest<TeamDto>(`/teams/${id(teamId)}`, { signal }),
 

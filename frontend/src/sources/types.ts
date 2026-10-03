@@ -2,6 +2,14 @@ import type { Athlete, AuditEntry, CoachAction, CoachInfo, PastAlert, Symptom, T
 
 export type DataSourceKind = 'mock' | 'api'
 
+/** The signed-in coach isn't on a team yet, so there's no dashboard to load. */
+export class NoTeamError extends Error {
+  constructor() {
+    super('You haven’t set up a team yet.')
+    this.name = 'NoTeamError'
+  }
+}
+
 /** Everything the coach app shows, loaded together. */
 export interface CoachSnapshot {
   team: TeamInfo

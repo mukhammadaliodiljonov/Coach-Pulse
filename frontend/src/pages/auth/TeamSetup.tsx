@@ -1,5 +1,9 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router'
+import { describeError } from '../../api/client'
+import { api } from '../../api/endpoints'
+import type { TeamDto } from '../../api/types'
+import { useAuth } from '../../auth/useAuth'
 import { Button } from '../../components/ui/Button'
 import { ChipGroup } from '../../components/ui/ChipGroup'
 import { Icon } from '../../components/ui/Icon'
@@ -19,11 +23,18 @@ const FREQUENCIES = ['1–2 per week', '3–4 per week', '5+ per week']
 
 const choices = (values: string[]) => values.map((v) => ({ value: v, label: v }))
 
+// With the backend, "Create team" saves the team and the coach becomes its head coach. The later steps
+// (adding athletes, the safety contact) aren't saved yet. With sample data nothing is saved.
 export function TeamSetup() {
   useTitle('Team setup')
   const navigate = useNavigate()
+  const { required: backend } = useAuth()
   const [step, setStep] = useState(0)
-  const [name, setName] = useState<string>(TEAM.name)
+  const [name, setName] = useState<string>(backend ? '' : TEAM.name)
+  const [created, setCreated] = useState<TeamDto | null>(null)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const joinCode = backend ? (created?.joinCode ?? '') : TEAM.code
   const [count, setCount] = useState('24')
   const [sport, setSport] = useState('Football')
   const [ageGroup, setAgeGroup] = useState('U17')
@@ -36,11 +47,29 @@ export function TeamSetup() {
   const [copied, setCopied] = useState(false)
 
   const last = step === STEPS.length - 1
-  const next = () => (last ? navigate(paths.overview) : setStep(step + 1))
+
+  const createTeam = async () => {
+    setSaving(true)
+    setError(null)
+    try {
+      setCreated(await api.createTeam({ name: name.trim(), sport, ageGroup, trainingFrequency: frequency }))
+      setStep(1)
+    } catch (e) {
+      setError(describeError(e))
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const next = () => {
+    if (last) navigate(paths.overview)
+    else if (step === 0 && backend && !created) void createTeam()
+    else setStep(step + 1)
+  }
 
   const copyInvite = async () => {
     try {
-      await navigator.clipboard.writeText(`Join ${name} on CoachPulse with team code ${TEAM.code}`)
+      await navigator.clipboard.writeText(`Join ${name} on CoachPulse with team code ${joinCode}`)
       setCopied(true)
       window.setTimeout(() => setCopied(false), 2000)
     } catch {
@@ -52,7 +81,7 @@ export function TeamSetup() {
     <div className={styles.page}>
       <div className={styles.top}>
         <Logo className={styles.grow} />
-        <Link to={paths.login}>Exit setup</Link>
+        <Link to={backend ? paths.overview : paths.login}>Exit setup</Link>
       </div>
 
       <ol className={styles.steps} aria-label="Setup progress">
@@ -71,7 +100,12 @@ export function TeamSetup() {
       </ol>
 
       <div className={styles.card}>
-        <SampleDataNote>Team setup isn’t connected to the server yet, so nothing here is saved.</SampleDataNote>
+        {!backend && <SampleDataNote>Team setup isn’t connected to the server yet, so nothing here is saved.</SampleDataNote>}
+        {backend && step === 1 && (
+          <SampleDataNote>
+            Athletes can’t join with the code or be added here yet; that comes with athlete sign-up.
+          </SampleDataNote>
+        )}
         {step === 0 && (
           <>
             <div className={styles.heading}>
@@ -81,12 +115,20 @@ export function TeamSetup() {
             <div className={styles.fields}>
               <label className={ui.field}>
                 Team name
-                <Input value={name} onChange={(e) => setName(e.target.value)} />
+                <Input
+                  value={name}
+                  maxLength={150}
+                  placeholder="e.g. Northside U17"
+                  disabled={created !== null}
+                  onChange={(e) => setName(e.target.value)}
+                />
               </label>
-              <label className={ui.field}>
-                Number of athletes
-                <Input inputMode="numeric" value={count} onChange={(e) => setCount(e.target.value.replace(/\D/g, ''))} />
-              </label>
+              {!backend && (
+                <label className={ui.field}>
+                  Number of athletes
+                  <Input inputMode="numeric" value={count} onChange={(e) => setCount(e.target.value.replace(/\D/g, ''))} />
+                </label>
+              )}
             </div>
             <fieldset className={styles.fieldset}>
               <legend className={styles.legend}>Sport</legend>
@@ -118,44 +160,46 @@ export function TeamSetup() {
             <div className={styles.code}>
               <div className={styles.codeText}>
                 <span className={styles.codeLabel}>Team code</span>
-                <span className={styles.codeValue}>{TEAM.code}</span>
+                <span className={styles.codeValue}>{joinCode}</span>
                 <span className={styles.codeHint}>Athletes enter this in the CoachPulse athlete app.</span>
               </div>
               <Button variant="white" size="md" onClick={copyInvite}>
                 {copied ? 'Copied' : 'Copy invite link'}
               </Button>
             </div>
-            <div className={styles.manual}>
-              <span className={styles.manualTitle}>Or add manually</span>
-              {athletes.map((a, i) => (
-                <div key={i} className={styles.manualRow}>
-                  <input
-                    className={styles.manualInput}
-                    aria-label={`Athlete ${i + 1} name`}
-                    placeholder="Name"
-                    value={a.name}
-                    onChange={(e) => setAthletes(athletes.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)))}
-                  />
-                  <input
-                    className={styles.manualInput}
-                    aria-label={`Athlete ${i + 1} position`}
-                    placeholder="Position"
-                    value={a.position}
-                    onChange={(e) =>
-                      setAthletes(athletes.map((x, j) => (j === i ? { ...x, position: e.target.value } : x)))
-                    }
-                  />
+            {!backend && (
+              <div className={styles.manual}>
+                <span className={styles.manualTitle}>Or add manually</span>
+                {athletes.map((a, i) => (
+                  <div key={i} className={styles.manualRow}>
+                    <input
+                      className={styles.manualInput}
+                      aria-label={`Athlete ${i + 1} name`}
+                      placeholder="Name"
+                      value={a.name}
+                      onChange={(e) => setAthletes(athletes.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)))}
+                    />
+                    <input
+                      className={styles.manualInput}
+                      aria-label={`Athlete ${i + 1} position`}
+                      placeholder="Position"
+                      value={a.position}
+                      onChange={(e) =>
+                        setAthletes(athletes.map((x, j) => (j === i ? { ...x, position: e.target.value } : x)))
+                      }
+                    />
+                  </div>
+                ))}
+                <div className={styles.buttons}>
+                  <Button variant="outline" size="sm" onClick={() => setAthletes([...athletes, { name: '', position: '' }])}>
+                    Add another
+                  </Button>
+                  <Button variant="ghost" size="sm">
+                    Upload CSV
+                  </Button>
                 </div>
-              ))}
-              <div className={styles.buttons}>
-                <Button variant="outline" size="sm" onClick={() => setAthletes([...athletes, { name: '', position: '' }])}>
-                  Add another
-                </Button>
-                <Button variant="ghost" size="sm">
-                  Upload CSV
-                </Button>
               </div>
-            </div>
+            )}
           </>
         )}
 
@@ -207,8 +251,14 @@ export function TeamSetup() {
           </div>
         )}
 
+        {error && (
+          <p className={styles.error} role="alert">
+            {error}
+          </p>
+        )}
         <div className={styles.footer}>
-          {step > 0 && !last && (
+          {/* With the backend the team exists after step 1, so there's no going back to create it again. */}
+          {step > (backend ? 1 : 0) && !last && (
             <Button variant="ghost" size="md" onClick={() => setStep(step - 1)}>
               Back
             </Button>
@@ -219,8 +269,8 @@ export function TeamSetup() {
               Skip for now
             </Button>
           )}
-          <Button size="md" onClick={next}>
-            {last ? 'Go to dashboard' : 'Continue'}
+          <Button size="md" onClick={next} disabled={saving || (step === 0 && !name.trim())}>
+            {saving ? 'Creating team…' : last ? 'Go to dashboard' : step === 0 && backend ? 'Create team' : 'Continue'}
           </Button>
         </div>
       </div>

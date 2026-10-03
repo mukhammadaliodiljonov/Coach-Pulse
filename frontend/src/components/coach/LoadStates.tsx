@@ -3,7 +3,8 @@ import { cx } from '../../lib/cx'
 import { formatClock } from '../../lib/time'
 import { useCoachStore } from '../../state/coachStore'
 import ui from '../../styles/ui.module.css'
-import { Button } from '../ui/Button'
+import { paths } from '../../navigation/paths'
+import { Button, ButtonLink } from '../ui/Button'
 import styles from './LoadStates.module.css'
 
 /** Placeholder blocks while the team's data loads. */
@@ -21,6 +22,21 @@ export function PageSkeleton() {
         <div className={styles.block} style={{ height: 200 }} />
         <div className={styles.block} style={{ height: 200 }} />
       </div>
+    </div>
+  )
+}
+
+/** A new coach: signed in, but there's no team to show yet. */
+export function NoTeam() {
+  return (
+    <div className={cx(ui.empty, styles.error)}>
+      <span className={ui.emptyTitle}>Create your team to get started</span>
+      <span className={cx(ui.emptyText, styles.errorDetail)}>
+        Your dashboard shows your athletes’ check-ins once you’ve set up a team.
+      </span>
+      <ButtonLink size="md" to={paths.setup}>
+        Create team
+      </ButtonLink>
     </div>
   )
 }
