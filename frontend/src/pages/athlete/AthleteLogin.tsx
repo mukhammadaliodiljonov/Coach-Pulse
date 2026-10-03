@@ -11,17 +11,16 @@ import styles from './athlete.module.css'
 // Authentication is mocked until the backend exists.
 export function AthleteLogin() {
   useTitle('Athlete sign in')
-  const { signIn } = useAthleteStore()
+  const { signIn, loading, error } = useAthleteStore()
   const navigate = useNavigate()
 
   return (
     <div className={styles.scroll}>
       <form
         className={styles.auth}
-        onSubmit={(e) => {
+        onSubmit={async (e) => {
           e.preventDefault()
-          signIn()
-          navigate(paths.athleteApp.home)
+          if (await signIn()) navigate(paths.athleteApp.home)
         }}
       >
         <LogoMark size={52} />
@@ -37,8 +36,13 @@ export function AthleteLogin() {
           Password
           <Input type="password" leftIcon="lock" placeholder="Enter password" autoComplete="current-password" />
         </label>
-        <Button type="submit" fullWidth>
-          Sign in
+        {error && (
+          <p className={styles.error} role="alert">
+            {error}
+          </p>
+        )}
+        <Button type="submit" fullWidth disabled={loading}>
+          {loading ? 'Signing in…' : 'Sign in'}
         </Button>
         <div className={styles.grow} />
         <div className={styles.newTeam}>

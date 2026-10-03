@@ -3,8 +3,8 @@ import { Link } from 'react-router'
 import { Avatar } from '../../components/ui/Avatar'
 import { ChipGroup } from '../../components/ui/ChipGroup'
 import { StatusBadge } from '../../components/ui/StatusBadge'
+import { SampleDataNote } from '../../components/ui/SampleDataNote'
 import { SESSIONS, sessionRows } from '../../data/sessions'
-import { TEAM } from '../../data/team'
 import { cx } from '../../lib/cx'
 import { useTitle } from '../../lib/useTitle'
 import { paths, useProfileLinkState } from '../../navigation/paths'
@@ -14,7 +14,7 @@ import styles from './Training.module.css'
 
 export function Training() {
   useTitle('Training session')
-  const { roster, team } = useCoachStore()
+  const { roster, team, teamInfo } = useCoachStore()
   const linkState = useProfileLinkState()
   const [sessionId, setSessionId] = useState(SESSIONS[0].id)
   const session = SESSIONS.find((s) => s.id === sessionId) ?? SESSIONS[0]
@@ -31,7 +31,7 @@ export function Training() {
     { label: 'Date', value: session.date },
     { label: 'Duration', value: avgDuration === null ? '—' : `${Math.round(avgDuration)} min` },
     { label: 'Training type', value: session.type },
-    { label: 'Team', value: TEAM.name },
+    { label: 'Team', value: teamInfo.name },
   ]
   const summary = [
     { label: 'Athletes checked in', value: session.checkedIn ?? `${team.checkedIn} / ${team.size}`, unit: '' },
@@ -54,6 +54,10 @@ export function Training() {
           options={SESSIONS.map((s) => ({ value: s.id, label: s.chip }))}
         />
       </header>
+      <SampleDataNote>
+        Sessions are sample data until the sessions API exists; the latest session uses athletes’ real post-training
+        check-ins.
+      </SampleDataNote>
 
       <section aria-label="Session details" className={cx(ui.card, styles.fields)}>
         {fields.map((f) => (

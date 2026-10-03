@@ -50,7 +50,14 @@ export function buildReport(kind: ReportKind, { roster, flagged, actions, audit 
       return {
         stats: [stat('Sessions', 4), stat('Avg load', '540 AU'), stat('Highest', '780 AU'), stat('vs baseline', '+12%')],
         columns: ['Athlete', 'Sessions', 'Last load', 'vs baseline'],
-        rows: roster.slice(0, 8).map((a) => [a.name, '4', `${a.load} AU`, signed(a.loadChangePct)]),
+        rows: roster
+          .slice(0, 8)
+          .map((a) => [
+            a.name,
+            '4',
+            a.load === null ? '—' : `${a.load} AU`,
+            a.loadChangePct === null ? '—' : signed(a.loadChangePct),
+          ]),
       }
     case 'alerts': {
       const high = flagged.filter((a) => a.status === 'high').length

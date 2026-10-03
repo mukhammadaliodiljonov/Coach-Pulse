@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import { describeError } from '../../api/client'
 import type { Athlete, CoachAction } from '../../domain/types'
 import { useCoachStore } from '../../state/coachStore'
 import ui from '../../styles/ui.module.css'
@@ -23,10 +24,21 @@ function RecordActionForm({ athlete }: { athlete: Athlete }) {
   const { recordAction, closeRecordAction, prefs } = useCoachStore()
   const [choice, setChoice] = useState<CoachAction | null>(null)
   const [notes, setNotes] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  const onSubmit = (e: FormEvent) => {
+  // On success the store closes the dialog; on failure it stays open with the notes intact.
+  const onSubmit = async (e: FormEvent) => {
     e.preventDefault()
-    if (choice) recordAction(athlete.id, choice, notes)
+    if (!choice || saving) return
+    setSaving(true)
+    setError(null)
+    try {
+      await recordAction(athlete.id, choice, notes)
+    } catch (err) {
+      setError(`Couldn’t save the action. ${describeError(err)}`)
+      setSaving(false)
+    }
   }
 
   return (
@@ -59,12 +71,17 @@ function RecordActionForm({ athlete }: { athlete: Athlete }) {
         />
       </label>
       <p className={styles.hint}>Saved with your name and time to the athlete’s follow-up history.</p>
+      {error && (
+        <p className={styles.error} role="alert">
+          {error}
+        </p>
+      )}
       <div className={styles.actions}>
         <Button variant="ghost" size="md" onClick={closeRecordAction}>
           Cancel
         </Button>
-        <Button type="submit" size="md" disabled={!choice}>
-          Save action
+        <Button type="submit" size="md" disabled={!choice || saving}>
+          {saving ? 'Saving…' : 'Save action'}
         </Button>
       </div>
     </form>

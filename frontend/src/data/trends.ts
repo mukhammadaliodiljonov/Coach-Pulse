@@ -18,8 +18,11 @@ export interface WeekTrend {
 
 const DAYS_TO_TODAY = ['Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun', 'Today']
 
-/** The dashboard's "Team trend": the last seven days of a team average against its baseline. */
-export function weekTrend(metric: WeekMetric, today: { wellness: number; fatigue: number }): WeekTrend {
+/**
+ * The dashboard's "Team trend": the last seven days of a team average against its baseline.
+ * Earlier days are sample data until the trends endpoint exists; today comes from the roster.
+ */
+export function weekTrend(metric: WeekMetric, today: { wellness: number | null; fatigue: number | null }): WeekTrend {
   if (metric === 'load') {
     return {
       label: 'Training load',
@@ -36,8 +39,9 @@ export function weekTrend(metric: WeekMetric, today: { wellness: number; fatigue
     }
   }
   const scale = { min: 1, max: 5, ticks: [5, 4, 3, 2, 1], decimals: 1 }
-  const week = (history: number[], value: number) =>
-    [...history, value].map((v, i) => ({ label: DAYS_TO_TODAY[i], value: v }))
+  const week = (history: number[], value: number | null) =>
+    [...history, ...(value === null ? [] : [value])].map((v, i) => ({ label: DAYS_TO_TODAY[i], value: v }))
+  const waiting = 'No check-ins yet today.'
   if (metric === 'wellness') {
     const base = TEAM_BASELINE.wellness
     const w = today.wellness
@@ -47,9 +51,11 @@ export function weekTrend(metric: WeekMetric, today: { wellness: number; fatigue
       baseline: base,
       points: week([3.9, 4.0, 3.9, 3.9, 3.8, 3.9], w),
       insight:
-        w < base
-          ? `Team wellness is ${w.toFixed(1)} today, slightly below the usual ${base}.`
-          : `Team wellness is ${w.toFixed(1)} today, in line with the usual ${base}.`,
+        w === null
+          ? waiting
+          : w < base
+            ? `Team wellness is ${w.toFixed(1)} today, slightly below the usual ${base}.`
+            : `Team wellness is ${w.toFixed(1)} today, in line with the usual ${base}.`,
     }
   }
   const base = TEAM_BASELINE.fatigue
@@ -61,11 +67,13 @@ export function weekTrend(metric: WeekMetric, today: { wellness: number; fatigue
     baseline: base,
     points: week(history, f),
     insight:
-      f > Math.max(...history)
-        ? `Team fatigue is ${f.toFixed(1)} today vs a usual ${base} — the highest this week.`
-        : f > base
-          ? `Team fatigue is ${f.toFixed(1)} today vs a usual ${base}.`
-          : `Team fatigue is ${f.toFixed(1)} today, in line with the usual ${base}.`,
+      f === null
+        ? waiting
+        : f > Math.max(...history)
+          ? `Team fatigue is ${f.toFixed(1)} today vs a usual ${base} — the highest this week.`
+          : f > base
+            ? `Team fatigue is ${f.toFixed(1)} today vs a usual ${base}.`
+            : `Team fatigue is ${f.toFixed(1)} today, in line with the usual ${base}.`,
   }
 }
 
@@ -90,10 +98,11 @@ export interface TrendMetric {
   tolerance: number
 }
 
+/** Today's team averages; null before anyone checks in (the baseline stands in). */
 export interface TrendToday {
-  wellness: number
-  fatigue: number
-  soreness: number
+  wellness: number | null
+  fatigue: number | null
+  soreness: number | null
   checkInPct: number
 }
 
@@ -123,7 +132,7 @@ export function buildTrendMetrics(range: TrendRange, today: TrendToday): TrendMe
   return [
     {
       label: 'Wellness',
-      values: series(range, TEAM_BASELINE.wellness, 0.12, today.wellness, 1, 1),
+      values: series(range, TEAM_BASELINE.wellness, 0.12, today.wellness ?? TEAM_BASELINE.wellness, 1, 1),
       baseline: TEAM_BASELINE.wellness,
       min: 1,
       max: 5,
@@ -133,7 +142,7 @@ export function buildTrendMetrics(range: TrendRange, today: TrendToday): TrendMe
     },
     {
       label: 'Fatigue',
-      values: series(range, TEAM_BASELINE.fatigue, 0.12, today.fatigue, 2, 1),
+      values: series(range, TEAM_BASELINE.fatigue, 0.12, today.fatigue ?? TEAM_BASELINE.fatigue, 2, 1),
       baseline: TEAM_BASELINE.fatigue,
       min: 1,
       max: 5,
@@ -143,7 +152,7 @@ export function buildTrendMetrics(range: TrendRange, today: TrendToday): TrendMe
     },
     {
       label: 'Soreness',
-      values: series(range, TEAM_BASELINE.soreness, 0.1, today.soreness, 3, 1),
+      values: series(range, TEAM_BASELINE.soreness, 0.1, today.soreness ?? TEAM_BASELINE.soreness, 3, 1),
       baseline: TEAM_BASELINE.soreness,
       min: 1,
       max: 5,

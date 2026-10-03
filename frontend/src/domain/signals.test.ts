@@ -29,7 +29,6 @@ const base: AthleteCheckIn = {
   symptomNote: '',
   checkedInAt: '8:00 AM',
   lastSession: '70 min × RPE 8',
-  hasBaseline: true,
 }
 
 const athlete = (overrides: Partial<AthleteCheckIn>): AthleteCheckIn => ({ ...base, ...overrides })
@@ -97,11 +96,26 @@ describe('detectSignals', () => {
   })
 
   it('only flags safety symptoms until a baseline exists', () => {
-    const early = athlete({ hasBaseline: false, fatigue: 5, loadChangePct: 40 })
+    const early = athlete({ baseline: null, fatigue: 5, loadChangePct: 40 })
     expect(detectSignals(early)).toEqual([])
     expect(detectSignals({ ...early, symptoms: ['Confusion'] }).map((s) => s.kind)).toEqual([
       'Safety symptom',
     ])
+  })
+
+  it('skips recovery checks while today’s check-in is pending', () => {
+    const pending = athlete({ wellness: null, fatigue: null, soreness: null, sleep: null, checkedInAt: null })
+    expect(detectSignals(pending)).toEqual([])
+    expect(detectSignals({ ...pending, loadChangePct: 20 }).map((s) => s.kind)).toEqual(['Training signal'])
+  })
+
+  it('needs a latest session for a training signal', () => {
+    expect(detectSignals(athlete({ load: null, loadRange: null, loadChangePct: null }))).toEqual([])
+  })
+
+  it('shows fractional baselines to one decimal', () => {
+    const [signal] = detectSignals(athlete({ fatigue: 5, baseline: { ...base.baseline!, fatigue: 2.3 } }))
+    expect(signal.chip).toBe('Fatigue 5/5 vs usual 2.3/5')
   })
 })
 
@@ -127,6 +141,23 @@ describe('status and next steps', () => {
 
   it('derives first name and initials', () => {
     expect(evaluateAthlete(base)).toMatchObject({ firstName: 'Sam', initials: 'SE' })
+  })
+
+  it('says why a quiet athlete has no signals', () => {
+    expect(evaluateAthlete(athlete({ checkedInAt: null, wellness: null, fatigue: null, soreness: null })).reason).toBe(
+      'No check-in yet today',
+    )
+    expect(evaluateAthlete(athlete({ baseline: null })).reason).toBe('Baseline still forming')
+  })
+
+  it('uses an assessment made elsewhere instead of evaluating', () => {
+    const signals = detectSignals(athlete({ soreness: 5 }))
+    const assessed = evaluateAthlete(base, { signals, status: 'review' })
+    expect(assessed).toMatchObject({ status: 'review', reason: 'Soreness well above usual level' })
+    expect(evaluateAthlete(base, { signals: [], status: 'high' })).toMatchObject({
+      reason: 'Flagged for review',
+      nextStepShort: 'Review the latest check-in.',
+    })
   })
 })
 
@@ -156,7 +187,7 @@ describe('helpers', () => {
 
 describe('demo roster', () => {
   const summarize = (scenario: Parameters<typeof buildRoster>[0]) =>
-    summarizeTeam(sortByAttention(buildRoster(scenario).map(evaluateAthlete)))
+    summarizeTeam(sortByAttention(buildRoster(scenario).map((a) => evaluateAthlete(a))))
 
   it('matches the numbers shown in the design', () => {
     const team = summarize('typical')
@@ -166,7 +197,15 @@ describe('demo roster', () => {
     expect(team.high.map((a) => a.id)).toEqual(['alex', 'ethan'])
     expect(team.fatigueAboveUsual).toHaveLength(8)
     expect(team.showPattern).toBe(true)
+    // Averages cover the 22 athletes who checked in.
     expect(team.averages).toEqual({ wellness: 3.5, fatigue: 2.5, soreness: 2.3 })
+  })
+
+  it('has no averages before anyone checks in', () => {
+    const team = summarize('noCheckins')
+    expect(team.checkedIn).toBe(0)
+    expect(team.averages).toEqual({ wellness: null, fatigue: null, soreness: null })
+    expect(team.high).toHaveLength(0)
   })
 
   it('flags Alex for three reasons', () => {

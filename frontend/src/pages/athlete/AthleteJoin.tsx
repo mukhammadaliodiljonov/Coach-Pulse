@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router'
 import { Button } from '../../components/ui/Button'
 import { Icon } from '../../components/ui/Icon'
 import { Input } from '../../components/ui/Input'
+import { SampleDataNote } from '../../components/ui/SampleDataNote'
 import { TEAM } from '../../data/team'
 import { useTitle } from '../../lib/useTitle'
 import { paths } from '../../navigation/paths'
@@ -27,6 +28,7 @@ export function AthleteJoin() {
         >
           <Icon name="back" size={14} />
         </button>
+        <SampleDataNote>Joining with a code isn’t connected to the server yet.</SampleDataNote>
         {!confirming ? (
           <>
             <div className={styles.heading}>

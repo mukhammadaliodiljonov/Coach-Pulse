@@ -57,7 +57,7 @@ export function AlertDetail() {
           <div className={styles.identity}>
             <h1 className={styles.name}>{a.name}</h1>
             <span className={styles.meta}>
-              {a.position} · Detected {alertTimeLabel(a).replace('Today', 'today')}
+              {a.position ?? 'Athlete'} · Detected {alertTimeLabel(a).replace('Today', 'today')}
             </span>
           </div>
           <StatusBadge status={a.status} size="lg" />

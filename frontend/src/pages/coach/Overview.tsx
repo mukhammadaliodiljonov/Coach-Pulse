@@ -5,10 +5,11 @@ import { Avatar } from '../../components/ui/Avatar'
 import { AuditFeed } from '../../components/ui/AuditFeed'
 import { Button, ButtonLink } from '../../components/ui/Button'
 import { Icon } from '../../components/ui/Icon'
+import { SampleDataNote } from '../../components/ui/SampleDataNote'
 import { Segmented } from '../../components/ui/Segmented'
 import { StatusBadge } from '../../components/ui/StatusBadge'
 import { DEMO_DAY, TEAM_BASELINE } from '../../data/team'
-import { latestLoadChange, weekTrend, type WeekMetric } from '../../data/trends'
+import { weekTrend, type WeekMetric } from '../../data/trends'
 import type { TeamSummary } from '../../domain/team'
 import { STATUS_LABELS, type Athlete, type Status } from '../../domain/types'
 import { cx } from '../../lib/cx'
@@ -18,52 +19,41 @@ import { useCoachStore } from '../../state/coachStore'
 import ui from '../../styles/ui.module.css'
 import styles from './Overview.module.css'
 
+function greeting(now: Date): string {
+  const hour = now.getHours()
+  return hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening'
+}
+
 export function Overview() {
   useTitle('Overview')
-  const { scenario, team, audit, showToast } = useCoachStore()
+  const { dataSource, team, audit, teamLoadChangePct } = useCoachStore()
+  // Sample data is pinned to its demo morning; real data uses the actual day.
+  const [now] = useState(() => new Date())
+  const day =
+    dataSource === 'api' ? now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }) : DEMO_DAY
 
   return (
     <div className={cx(ui.page, styles.page)}>
       <header className={styles.header}>
-        <h1 className={styles.greeting}>Good morning, Coach</h1>
+        <h1 className={styles.greeting}>{dataSource === 'api' ? greeting(now) : 'Good morning'}, Coach</h1>
         <p className={styles.date}>
-          {DEMO_DAY} · {team.checkedIn} of {team.size} athletes checked in
+          {day} · {team.checkedIn} of {team.size} athletes checked in
         </p>
       </header>
 
-      {scenario === 'offline' && (
-        <div role="alert" className={styles.offline}>
-          <span className={styles.offlineText}>
-            You’re offline. Showing data last updated at 7:58 AM — new check-ins will appear when you reconnect.
-          </span>
-          <button type="button" className={styles.retry} onClick={() => showToast('Reconnected — data is up to date')}>
-            Retry
-          </button>
-        </div>
-      )}
-
-      {scenario === 'loading' ? (
-        <DashboardSkeleton />
-      ) : scenario === 'noCheckins' ? (
-        <div className={styles.waiting}>
-          <span className={styles.waitingIcon}>
-            <Icon name="calendar" size={28} />
-          </span>
-          <h2 className={styles.waitingTitle}>Waiting for today’s athlete check-ins</h2>
-          <p className={styles.waitingText}>
-            Check-ins usually arrive between 7:00 and 9:00 AM. You’ll see who needs attention as soon as they come in.
-          </p>
-          <Button variant="outline" size="md" onClick={() => showToast('Reminder sent to the team')}>
-            Send reminder to team
-          </Button>
-        </div>
+      {team.checkedIn === 0 ? (
+        <>
+          <WaitingForCheckIns />
+          {/* Flags from yesterday's training still need attention before today's check-ins arrive. */}
+          {team.flagged.length > 0 && <AttentionRequired team={team} />}
+        </>
       ) : (
         <>
           <TeamStatus team={team} />
           <AttentionRequired team={team} />
           <div className={styles.duo}>
             {team.showPattern && <TeamPattern team={team} />}
-            <TeamSnapshot team={team} loadChange={latestLoadChange(scenario)} />
+            <TeamSnapshot team={team} loadChange={teamLoadChangePct} />
           </div>
           <TeamTrend team={team} />
           <section aria-labelledby="activity-title" className={ui.card} style={{ gap: 6 }}>
@@ -73,6 +63,27 @@ export function Overview() {
             <AuditFeed entries={audit.slice(0, 5)} />
           </section>
         </>
+      )}
+    </div>
+  )
+}
+
+function WaitingForCheckIns() {
+  const { dataSource, showToast } = useCoachStore()
+  return (
+    <div className={styles.waiting}>
+      <span className={styles.waitingIcon}>
+        <Icon name="calendar" size={28} />
+      </span>
+      <h2 className={styles.waitingTitle}>Waiting for today’s athlete check-ins</h2>
+      <p className={styles.waitingText}>
+        Check-ins usually arrive between 7:00 and 9:00 AM. You’ll see who needs attention as soon as they come in.
+      </p>
+      {/* Sending reminders needs a backend endpoint; the sample data only pretends. */}
+      {dataSource === 'mock' && (
+        <Button variant="outline" size="md" onClick={() => showToast('Reminder sent to the team')}>
+          Send reminder to team
+        </Button>
       )}
     </div>
   )
@@ -166,7 +177,7 @@ function HighPriorityCard({ athlete: a }: { athlete: Athlete }) {
         <div className={styles.who}>
           <span className={styles.highName}>{a.name}</span>
           <span className={styles.whoMeta}>
-            {a.position} · Checked in {a.checkedInAt ?? '—'}
+            {a.position ?? 'Athlete'} · Checked in {a.checkedInAt ?? '—'}
           </span>
         </div>
         <StatusBadge status="high" size="md" />
@@ -215,7 +226,7 @@ function ReviewCard({ athlete: a }: { athlete: Athlete }) {
         <Avatar initials={a.initials} size={40} status="review" />
         <div className={styles.reviewWho}>
           <span className={styles.reviewName}>{a.name}</span>
-          <span className={styles.reviewPosition}>{a.position}</span>
+          <span className={styles.reviewPosition}>{a.position ?? 'Athlete'}</span>
         </div>
         <StatusBadge status="review" size="sm" />
       </div>
@@ -285,55 +296,50 @@ function TeamPattern({ team }: { team: TeamSummary }) {
   )
 }
 
-function TeamSnapshot({ team, loadChange }: { team: TeamSummary; loadChange: number }) {
+type SnapshotTile = {
+  label: string
+  value: string
+  unit: string
+  fill: number
+  tone?: 'review'
+  sub: string
+  subTone?: 'review' | 'high'
+}
+
+/** A team average out of 5, or a dash before anyone checks in. */
+function averageTile(label: string, value: number | null, usual: number, worseUp?: boolean): SnapshotTile {
+  const worse = value !== null && worseUp && value - usual >= 0.3
+  return {
+    label,
+    value: value === null ? '—' : value.toFixed(1),
+    unit: value === null ? '' : ' / 5',
+    fill: value === null ? 0 : value / 5,
+    tone: worse ? 'review' : undefined,
+    sub: `${worse ? 'Above usual' : 'Usual'} ${usual.toFixed(1)}`,
+    subTone: worse ? 'review' : undefined,
+  }
+}
+
+function TeamSnapshot({ team, loadChange }: { team: TeamSummary; loadChange: number | null }) {
   const { wellness, fatigue, soreness } = team.averages
-  const fatigueUp = fatigue - TEAM_BASELINE.fatigue >= 0.3
   const pending = team.size - team.checkedIn
-  const tiles: {
-    label: string
-    value: string
-    unit: string
-    fill: number
-    tone?: 'review'
-    sub: string
-    subTone?: 'review' | 'high'
-  }[] = [
+  const tiles: SnapshotTile[] = [
     {
       label: 'Check-ins',
-      value: String(Math.round((team.checkedIn / team.size) * 100)),
+      value: String(team.size ? Math.round((team.checkedIn / team.size) * 100) : 0),
       unit: '%',
-      fill: team.checkedIn / team.size,
+      fill: team.size ? team.checkedIn / team.size : 0,
       sub: `${team.checkedIn} of ${team.size} · ${pending} pending`,
     },
-    {
-      label: 'Average wellness',
-      value: wellness.toFixed(1),
-      unit: ' / 5',
-      fill: wellness / 5,
-      sub: `Usual ${TEAM_BASELINE.wellness}`,
-    },
-    {
-      label: 'Average fatigue',
-      value: fatigue.toFixed(1),
-      unit: ' / 5',
-      fill: fatigue / 5,
-      tone: fatigueUp ? 'review' : undefined,
-      sub: `${fatigueUp ? 'Above usual' : 'Usual'} ${TEAM_BASELINE.fatigue}`,
-      subTone: fatigueUp ? 'review' : undefined,
-    },
-    {
-      label: 'Average soreness',
-      value: soreness.toFixed(1),
-      unit: ' / 5',
-      fill: soreness / 5,
-      sub: `Usual ${TEAM_BASELINE.soreness.toFixed(1)}`,
-    },
+    averageTile('Average wellness', wellness, TEAM_BASELINE.wellness),
+    averageTile('Average fatigue', fatigue, TEAM_BASELINE.fatigue, true),
+    averageTile('Average soreness', soreness, TEAM_BASELINE.soreness),
     {
       label: 'Training load',
-      value: `${loadChange > 0 ? '+' : ''}${loadChange}`,
-      unit: '%',
-      fill: (TEAM_BASELINE.load * (1 + loadChange / 100)) / 1000,
-      tone: loadChange >= 10 ? 'review' : undefined,
+      value: loadChange === null ? '—' : `${loadChange > 0 ? '+' : ''}${loadChange}`,
+      unit: loadChange === null ? '' : '%',
+      fill: loadChange === null ? 0 : (TEAM_BASELINE.load * (1 + loadChange / 100)) / 1000,
+      tone: loadChange !== null && loadChange >= 10 ? 'review' : undefined,
       sub: 'vs recent baseline',
     },
     {
@@ -402,24 +408,7 @@ function TeamTrend({ team }: { team: TeamSummary }) {
         baselineLabel={String(trend.baseline)}
       />
       <p className={ui.caption}>Values are compared with the team’s recent baseline (dashed line, previous 21 days).</p>
+      <SampleDataNote>Earlier days are sample data until the team trends API exists; today comes from check-ins.</SampleDataNote>
     </section>
-  )
-}
-
-function DashboardSkeleton() {
-  return (
-    <div className={styles.skeleton} aria-busy="true" aria-label="Loading dashboard">
-      <div className={styles.skeletonRow}>
-        <div style={{ height: 132 }} />
-        <div style={{ height: 132 }} />
-        <div style={{ height: 132 }} />
-      </div>
-      <div style={{ height: 22, width: 220, borderRadius: 8 }} />
-      <div style={{ height: 180 }} />
-      <div className={styles.skeletonRow} style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' }}>
-        <div style={{ height: 200 }} />
-        <div style={{ height: 200 }} />
-      </div>
-    </div>
   )
 }

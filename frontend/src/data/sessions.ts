@@ -59,11 +59,11 @@ function parseSession(session: string): { durationMin: number; rpe: number } {
 
 export function sessionRows(session: TrainingSession, roster: Athlete[]): SessionRow[] {
   const { plan, flags = {} } = session
-  const athletes = plan ? roster : roster.filter((a) => a.checkedInAt)
+  const athletes = plan ? roster : roster.filter((a) => a.checkedInAt && a.lastSession)
   return athletes
     .map((athlete, i): SessionRow => {
       if (!plan) {
-        const { durationMin, rpe } = parseSession(athlete.lastSession)
+        const { durationMin, rpe } = parseSession(athlete.lastSession ?? '')
         return { athlete, status: athlete.status, reason: athlete.reason, durationMin, rpe, load: durationMin * rpe }
       }
       const rpe = Math.max(3, Math.min(10, plan.rpe + ((i % 3) - 1)))

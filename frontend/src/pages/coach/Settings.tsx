@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router'
 import { Avatar } from '../../components/ui/Avatar'
 import { Button } from '../../components/ui/Button'
 import { Input } from '../../components/ui/Input'
+import { SampleDataNote } from '../../components/ui/SampleDataNote'
 import { Toggle } from '../../components/ui/Toggle'
 import { TEAM } from '../../data/team'
 import { cx } from '../../lib/cx'
@@ -27,7 +28,7 @@ const CHANNELS: { key: keyof CoachPrefs; label: string; sub: string }[] = [
 
 export function Settings() {
   useTitle('Settings')
-  const { prefs, togglePref, showToast } = useCoachStore()
+  const { prefs, togglePref, showToast, teamInfo, coach } = useCoachStore()
   const navigate = useNavigate()
   const fileRef = useRef<HTMLInputElement>(null)
   const [protocol, setProtocol] = useState({
@@ -51,6 +52,7 @@ export function Settings() {
       <header className={ui.pageHeading}>
         <h1 className={ui.pageTitle}>Settings</h1>
       </header>
+      <SampleDataNote>Changes here aren’t saved to the server yet; the settings API comes later.</SampleDataNote>
 
       <section aria-labelledby="team-title" className={ui.card} style={{ gap: 16 }}>
         <h2 id="team-title" className={ui.sectionTitle}>
@@ -59,15 +61,15 @@ export function Settings() {
         <div className={styles.teamFields}>
           <label className={cx(ui.field, styles.label)}>
             Team name
-            <Input defaultValue={TEAM.name} />
+            <Input defaultValue={teamInfo.name} />
           </label>
           <label className={cx(ui.field, styles.label)}>
             Sport
-            <Input defaultValue={TEAM.sport} />
+            <Input defaultValue={teamInfo.sport} />
           </label>
           <label className={cx(ui.field, styles.label)}>
             Age group
-            <Input defaultValue={TEAM.ageGroup} />
+            <Input defaultValue={teamInfo.ageGroup ?? ''} placeholder="e.g. U17" />
           </label>
         </div>
       </section>
@@ -114,11 +116,11 @@ export function Settings() {
           Account
         </h2>
         <div className={styles.account}>
-          <Avatar initials={TEAM.coach.initials} size={48} tone="dark" />
+          <Avatar initials={coach.initials} size={48} tone="dark" />
           <div className={styles.accountText}>
-            <span className={styles.accountName}>{TEAM.coach.name}</span>
+            <span className={styles.accountName}>{coach.name}</span>
             <span className={styles.accountMeta}>
-              {TEAM.coach.role} · {TEAM.coach.email}
+              {coach.role} · {coach.email}
             </span>
           </div>
           <Button size="sm" variant="outline">

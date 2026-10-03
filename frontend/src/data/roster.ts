@@ -1,14 +1,20 @@
 import { isLoadElevated } from '../domain/signals'
-import type { AthleteCheckIn } from '../domain/types'
+import type { AthleteCheckIn, Baseline, LoadPoint } from '../domain/types'
 
 // Fictional roster from the design handoff, ported from the prototype's build().
 
 export type Scenario = 'typical' | 'allGreen' | 'noCheckins' | 'loading' | 'offline'
 export const SCENARIOS: readonly Scenario[] = ['typical', 'allGreen', 'noCheckins', 'loading', 'offline']
 
-type Seed = Omit<AthleteCheckIn, 'loadHistory' | 'hasBaseline'>
+/** Every sample athlete has a baseline and a recent session. */
+type Seed = Omit<AthleteCheckIn, 'loadHistory' | 'baseline' | 'load' | 'loadRange' | 'loadChangePct'> & {
+  baseline: Baseline
+  load: number
+  loadRange: { low: number; high: number }
+  loadChangePct: number
+}
 
-const usual = (wellness: number, fatigue: number, soreness: number, sleep: string) => ({
+const usual = (wellness: number, fatigue: number, soreness: number, sleep: string): Baseline => ({
   wellness,
   fatigue,
   soreness,
@@ -149,25 +155,26 @@ const OTHERS: [id: string, name: string, position: string, age: number][] = [
   ['harry', 'Harry Mitchell', 'Forward', 15],
 ]
 
-/** Deterministic filler athletes, mostly within their usual range. */
+/** Deterministic filler athletes, mostly within their usual range; two haven't checked in yet. */
 function generated([id, name, position, age]: (typeof OTHERS)[number], i: number): Seed {
   const loadChangePct = ((i * 7) % 15) - 6
+  const pending = i === 7 || i === 15
   return {
     id,
     name,
     position,
     age,
-    wellness: i % 3 === 0 ? 3 : 4,
-    fatigue: [1, 5, 9, 13].includes(i) ? 3 : 2,
-    soreness: 2,
-    sleep: `${7 + (i % 2)}h ${String((10 + i * 3) % 60).padStart(2, '0')}m`,
+    wellness: pending ? null : i % 3 === 0 ? 3 : 4,
+    fatigue: pending ? null : [1, 5, 9, 13].includes(i) ? 3 : 2,
+    soreness: pending ? null : 2,
+    sleep: pending ? null : `${7 + (i % 2)}h ${String((10 + i * 3) % 60).padStart(2, '0')}m`,
     baseline: usual(4, 2, 2, '8h 00m'),
     load: Math.round(550 * (1 + loadChangePct / 100)),
     loadRange: { low: 480, high: 620 },
     loadChangePct,
     symptoms: [],
     symptomNote: '',
-    checkedInAt: i === 7 || i === 15 ? null : `7:${20 + i * 2} AM`,
+    checkedInAt: pending ? null : `7:${20 + i * 2} AM`,
     lastSession: `70 min × RPE ${7 + (i % 2)}`,
   }
 }
@@ -177,21 +184,23 @@ function applyScenario(a: Seed, scenario: Scenario): Seed {
     case 'allGreen':
       return {
         ...a,
-        wellness: a.baseline.wellness,
-        fatigue: a.baseline.fatigue,
-        soreness: a.baseline.soreness,
+        wellness: a.wellness === null ? null : a.baseline.wellness,
+        fatigue: a.fatigue === null ? null : a.baseline.fatigue,
+        soreness: a.soreness === null ? null : a.baseline.soreness,
         symptoms: [],
         loadChangePct: Math.min(a.loadChangePct, 6),
         load: Math.min(a.load, a.loadRange.high),
       }
     case 'noCheckins':
-      // Nobody has checked in yet, so there is nothing to compare today.
+      // Nobody has checked in yet; the latest sessions are from before today.
       return {
         ...a,
-        wellness: a.baseline.wellness,
-        fatigue: a.baseline.fatigue,
-        soreness: a.baseline.soreness,
+        wellness: null,
+        fatigue: null,
+        soreness: null,
+        sleep: null,
         symptoms: [],
+        symptomNote: '',
         checkedInAt: null,
         alertRaisedAt: undefined,
       }
@@ -200,23 +209,23 @@ function applyScenario(a: Seed, scenario: Scenario): Seed {
   }
 }
 
-/** A plausible 14-day load history ending with the latest session. */
-function loadHistory(a: Seed): number[] {
+/** A plausible 14-day load history ending with the latest session on Sunday, October 4, 2026. */
+function loadHistory(a: Seed): LoadPoint[] {
   const { low, high } = a.loadRange
   const mid = (low + high) / 2
   const amplitude = (high - low) / 2
-  const history = Array.from({ length: 14 }, (_, i) =>
-    i === 13 ? a.load : Math.round(mid + Math.sin(i * 1.9 + a.age) * amplitude * 0.75),
+  const loads = Array.from({ length: 14 }, (_, i) =>
+    i === 13 ? a.load : Math.round(mid + Math.sin(i * 1.9 + (a.age ?? 0)) * amplitude * 0.75),
   )
   if (isLoadElevated(a.loadChangePct)) {
-    history[11] = high - 10
-    history[12] = Math.round((high + a.load) / 2)
+    loads[11] = high - 10
+    loads[12] = Math.round((high + a.load) / 2)
   }
-  return history
+  return loads.map((load, i) => ({ date: `2026-${i < 10 ? `09-${21 + i}` : `10-0${i - 9}`}`, load }))
 }
 
 export function buildRoster(scenario: Scenario): AthleteCheckIn[] {
   return [...DETAILED, ...OTHERS.map(generated)]
     .map((seed) => applyScenario(seed, scenario))
-    .map((seed) => ({ ...seed, loadHistory: loadHistory(seed), hasBaseline: true }))
+    .map((seed) => ({ ...seed, loadHistory: loadHistory(seed) }))
 }

@@ -1,5 +1,4 @@
 import { NavLink, useNavigate } from 'react-router'
-import { TEAM } from '../../data/team'
 import { cx } from '../../lib/cx'
 import { paths } from '../../navigation/paths'
 import { useAthleteStore } from '../../state/athleteStore'
@@ -22,7 +21,7 @@ const NAV: { to: string; label: string; icon: IconName; end?: boolean }[] = [
 ]
 
 export function Sidebar() {
-  const { team, actions } = useCoachStore()
+  const { status, team, teamInfo, coach, actions } = useCoachStore()
   const athleteApp = useAthleteStore()
   const navigate = useNavigate()
   const openAlerts = team.flagged.filter((a) => !actions[a.id]).length
@@ -56,7 +55,7 @@ export function Sidebar() {
         className={styles.preview}
         title="Open athlete check-in"
         onClick={() => {
-          athleteApp.signIn()
+          void athleteApp.signIn()
           navigate(paths.athleteApp.home)
         }}
       >
@@ -64,15 +63,17 @@ export function Sidebar() {
         <span className={styles.previewLabel}>Preview athlete check-in</span>
       </button>
       <div className={styles.account}>
-        <div className={styles.coach}>
-          <Avatar initials={TEAM.coach.initials} tone="dark" />
-          <div className={styles.coachText}>
-            <span className={styles.coachName}>{TEAM.coach.name}</span>
-            <span className={styles.coachRole}>
-              {TEAM.coach.role} · {TEAM.name}
-            </span>
+        {status === 'ready' && (
+          <div className={styles.coach}>
+            <Avatar initials={coach.initials} tone="dark" />
+            <div className={styles.coachText}>
+              <span className={styles.coachName}>{coach.name}</span>
+              <span className={styles.coachRole}>
+                {coach.role} · {teamInfo.name}
+              </span>
+            </div>
           </div>
-        </div>
+        )}
         <div className={styles.accountActions}>
           <button type="button" onClick={() => navigate(paths.settings)}>
             Notifications

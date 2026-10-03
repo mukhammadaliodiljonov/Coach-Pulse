@@ -3,7 +3,6 @@ import { ButtonLink } from '../../components/ui/Button'
 import { ChipGroup } from '../../components/ui/ChipGroup'
 import { Icon } from '../../components/ui/Icon'
 import { StatusBadge } from '../../components/ui/StatusBadge'
-import { RESOLVED_ALERTS } from '../../data/activity'
 import { alertTimeLabel } from '../../domain/alerts'
 import { STATUS_LABELS, type Status } from '../../domain/types'
 import { cx } from '../../lib/cx'
@@ -38,7 +37,7 @@ const matches = (item: AlertItem, filter: AlertFilter) =>
 
 export function Alerts() {
   useTitle('Alerts')
-  const { team, actions } = useCoachStore()
+  const { team, actions, pastAlerts } = useCoachStore()
   const linkState = useProfileLinkState()
   const [params, setParams] = useSearchParams()
   const filter = FILTERS.find((f) => f.value === params.get('filter'))?.value ?? 'all'
@@ -58,11 +57,11 @@ export function Alerts() {
         to: paths.alert(a.id),
       }
     }),
-    ...RESOLVED_ALERTS.map((r) => ({
+    ...pastAlerts.map((r) => ({
       key: `past-${r.athleteId}`,
       athleteId: r.athleteId,
       name: r.name,
-      status: r.status as AlertItem['status'],
+      status: r.status,
       reason: r.reason,
       detected: r.detected,
       resolved: true,

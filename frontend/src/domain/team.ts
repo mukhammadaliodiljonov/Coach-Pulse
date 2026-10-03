@@ -11,15 +11,17 @@ export interface TeamSummary {
   flagged: Athlete[]
   fatigueAboveUsual: Athlete[]
   showPattern: boolean
-  /** Team averages for today, rounded to one decimal like the UI shows them. */
-  averages: { wellness: number; fatigue: number; soreness: number }
+  /** Averages over today's check-ins, rounded to one decimal; null before anyone checks in. */
+  averages: { wellness: number | null; fatigue: number | null; soreness: number | null }
 }
 
 const round1 = (n: number) => Math.round(n * 10) / 10
 
 export function summarizeTeam(roster: Athlete[]): TeamSummary {
-  const average = (pick: (a: Athlete) => number) =>
-    roster.length ? round1(roster.reduce((sum, a) => sum + pick(a), 0) / roster.length) : 0
+  const average = (pick: (a: Athlete) => number | null) => {
+    const values = roster.map(pick).filter((v): v is number => v !== null)
+    return values.length ? round1(values.reduce((sum, v) => sum + v, 0) / values.length) : null
+  }
   const fatigueAboveUsual = roster.filter(hasFatigueAboveUsual)
   return {
     size: roster.length,

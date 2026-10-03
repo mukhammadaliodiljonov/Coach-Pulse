@@ -1,5 +1,5 @@
 import { alertTimeLabel } from '../domain/alerts'
-import type { Athlete, AuditEntry, Status } from '../domain/types'
+import type { Athlete, AuditEntry, PastAlert, Status } from '../domain/types'
 import { paths } from '../navigation/paths'
 import type { Scenario } from './roster'
 
@@ -67,14 +67,7 @@ export function seedAudit(scenario: Scenario): AuditEntry[] {
 }
 
 /** Alerts that were raised and resolved before today. */
-export const RESOLVED_ALERTS: {
-  athleteId: string
-  name: string
-  status: Status
-  reason: string
-  detected: string
-  action: string
-}[] = [
+export const RESOLVED_ALERTS: PastAlert[] = [
   {
     athleteId: 'liam',
     name: 'Liam Smith',

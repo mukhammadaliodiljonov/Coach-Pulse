@@ -66,6 +66,28 @@
   gap: 20px;
 }
 
+.signing {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding-top: 12px;
+}
+
+.signingBlock {
+  border-radius: 16px;
+  background: var(--cp-track);
+}
+
+.error {
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--cp-high-bg);
+  color: var(--cp-high-fg);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
 /* Bottom nav */
 .nav {
   flex-shrink: 0;

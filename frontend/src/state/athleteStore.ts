@@ -1,16 +1,22 @@
 import { createContext, useContext } from 'react'
-import type { DailyAnswers, ReminderKey } from '../data/athleteApp'
-import type { CheckInFlow } from '../navigation/paths'
+import type { ReminderKey } from '../data/athleteApp'
+import type { AthleteSnapshot, DailyCheckInInput, DataSourceKind, PostTrainingInput } from '../sources/types'
 
 export interface AthleteStore {
+  dataSource: DataSourceKind
+  /** Signed in and loaded. */
   signedIn: boolean
-  signIn: () => void
+  /** Signing in. */
+  loading: boolean
+  /** Why signing in failed. */
+  error: string | null
+  snapshot: AthleteSnapshot | null
+  /** Resolves true once signed in. */
+  signIn: () => Promise<boolean>
   signOut: () => void
-  /** Check-ins submitted today. */
-  completed: Partial<Record<CheckInFlow, boolean>>
-  /** Today's daily check-in answers, once submitted. */
-  todayAnswers: DailyAnswers | null
-  completeCheckIn: (flow: CheckInFlow, daily?: DailyAnswers) => void
+  /** Each rejects if the check-in couldn't be sent. */
+  submitDaily: (input: DailyCheckInInput) => Promise<void>
+  submitPostTraining: (input: PostTrainingInput) => Promise<void>
   reminders: Record<ReminderKey, boolean>
   toggleReminder: (key: ReminderKey) => void
 }

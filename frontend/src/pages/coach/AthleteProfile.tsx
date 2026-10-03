@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router'
+import { describeError } from '../../api/client'
 import { LoadBarChart } from '../../components/charts/LoadBarChart'
 import { ActionChoice } from '../../components/ui/ActionChoice'
 import { AuditFeed } from '../../components/ui/AuditFeed'
@@ -7,7 +8,7 @@ import { Avatar } from '../../components/ui/Avatar'
 import { Button, ButtonLink } from '../../components/ui/Button'
 import { Icon } from '../../components/ui/Icon'
 import { StatusBadge } from '../../components/ui/StatusBadge'
-import { isDeviating, isLoadElevated } from '../../domain/signals'
+import { formatScore, isDeviating, isLoadElevated } from '../../domain/signals'
 import { SYMPTOMS, type Athlete, type CoachAction, type RecoveryMetric } from '../../domain/types'
 import { cx } from '../../lib/cx'
 import { useTitle } from '../../lib/useTitle'
@@ -22,9 +23,6 @@ const BACK_LABELS: Record<Origin, string> = {
   alerts: 'Back to alerts',
   alert: 'Back to alert',
 }
-
-/** The 14-day load history in the sample data ends on Sunday, October 4. */
-const LOAD_HISTORY_START = new Date(2026, 8, 21)
 
 export function AthleteProfile() {
   const { athleteId } = useParams()
@@ -86,17 +84,23 @@ export function AthleteProfile() {
 function ProfileHeader({ athlete: a }: { athlete: Athlete }) {
   const { actions, openRecordAction } = useCoachStore()
   const action = actions[a.id]
+  const facts = [
+    a.position,
+    a.age === null ? null : `Age ${a.age}`,
+    `Last check-in ${a.checkedInAt ? `today, ${a.checkedInAt}` : 'pending'}`,
+  ].filter((fact): fact is string => fact !== null)
   return (
     <header className={styles.header}>
       <Avatar initials={a.initials} size={72} status={a.status} />
       <div className={styles.identity}>
         <h1 className={styles.name}>{a.name}</h1>
         <div className={styles.meta}>
-          <span>{a.position}</span>
-          <span aria-hidden="true">·</span>
-          <span>Age {a.age}</span>
-          <span aria-hidden="true">·</span>
-          <span>Last check-in {a.checkedInAt ? `today, ${a.checkedInAt}` : 'pending'}</span>
+          {facts.map((fact, i) => (
+            <span key={fact} className={styles.fact}>
+              {i > 0 && <span aria-hidden="true">·</span>}
+              {fact}
+            </span>
+          ))}
         </div>
       </div>
       <div className={styles.statusColumn}>
@@ -136,12 +140,20 @@ function WhyFlagged({ athlete: a }: { athlete: Athlete }) {
       </div>
       {open && (
         <div id="why-body" className={styles.stack} style={{ gap: 14 }}>
-          {a.status === 'normal' && (
-            <div className={styles.withinRange}>
-              <StatusBadge status="normal" iconOnly iconSize={22} />
-              Within usual range — no notable deviation detected.
-            </div>
-          )}
+          {a.status === 'normal' &&
+            (!a.baseline ? (
+              <p className={styles.quiet}>
+                {a.firstName}’s baseline is still forming. Until there are 7–14 days of check-ins, only safety symptoms
+                are flagged.
+              </p>
+            ) : !a.checkedInAt ? (
+              <p className={styles.quiet}>No check-in yet today.</p>
+            ) : (
+              <div className={styles.withinRange}>
+                <StatusBadge status="normal" iconOnly iconSize={22} />
+                Within usual range — no notable deviation detected.
+              </div>
+            ))}
           {a.signals.map((s) => (
             <div key={s.kind} className={styles.signal} data-level={s.level}>
               <StatusBadge status={s.level} iconOnly iconSize={22} className={styles.signalBadge} />
@@ -152,9 +164,11 @@ function WhyFlagged({ athlete: a }: { athlete: Athlete }) {
               </div>
             </div>
           ))}
-          <p className={ui.footnote}>
-            Compared with {a.firstName}’s own check-ins over the last 21 days — not a fixed team or medical threshold.
-          </p>
+          {a.baseline && (
+            <p className={ui.footnote}>
+              Compared with {a.firstName}’s own check-ins over the last 21 days — not a fixed team or medical threshold.
+            </p>
+          )}
         </div>
       )}
     </section>
@@ -181,7 +195,11 @@ function ReportedSymptoms({ athlete: a }: { athlete: Athlete }) {
               <div className={styles.symptomText}>
                 <span className={styles.symptomName}>{isReported ? symptom : `No ${symptom.toLowerCase()}`}</span>
                 <span className={styles.symptomSub}>
-                  {isReported ? `Reported today, ${a.checkedInAt}` : 'Not reported'}
+                  {!isReported
+                    ? 'Not reported'
+                    : a.checkedInAt
+                      ? `Reported today, ${a.checkedInAt}`
+                      : a.symptomNote || 'Reported'}
                 </span>
               </div>
             </div>
@@ -216,25 +234,35 @@ interface BaselineRow {
 }
 
 function baselineRows(a: Athlete): BaselineRow[] {
-  const scale = (label: RecoveryMetric, value: number, usual: number): BaselineRow => {
-    const d = value - usual
-    return {
-      label,
-      today: `${value}/5`,
-      usual: `${usual}/5`,
-      todayFill: value / 5,
-      usualStart: Math.max(0, (usual - 0.5) / 5),
-      usualWidth: 1 / 5,
-      delta: d === 0 ? 'Same as usual' : `${Math.abs(d)} ${d > 0 ? 'above' : 'below'} usual`,
-      flagged: isDeviating(label, value, usual),
+  const rows: BaselineRow[] = []
+  if (a.baseline) {
+    const scale = (label: RecoveryMetric, value: number | null, usual: number): BaselineRow => {
+      const d = value === null ? 0 : Math.round((value - usual) * 10) / 10
+      return {
+        label,
+        today: value === null ? '—' : `${value}/5`,
+        usual: `${formatScore(usual)}/5`,
+        todayFill: value === null ? 0 : value / 5,
+        usualStart: Math.max(0, (usual - 0.5) / 5),
+        usualWidth: 1 / 5,
+        delta:
+          value === null
+            ? 'No check-in yet'
+            : d === 0
+              ? 'Same as usual'
+              : `${formatScore(Math.abs(d))} ${d > 0 ? 'above' : 'below'} usual`,
+        flagged: value !== null && isDeviating(label, value, usual),
+      }
     }
+    rows.push(
+      scale('Fatigue', a.fatigue, a.baseline.fatigue),
+      scale('Wellness', a.wellness, a.baseline.wellness),
+      scale('Soreness', a.soreness, a.baseline.soreness),
+    )
   }
-  const max = Math.max(a.loadRange.high * 1.3, ...a.loadHistory) * 1.05
-  return [
-    scale('Fatigue', a.fatigue, a.baseline.fatigue),
-    scale('Wellness', a.wellness, a.baseline.wellness),
-    scale('Soreness', a.soreness, a.baseline.soreness),
-    {
+  if (a.load !== null && a.loadRange && a.loadChangePct !== null) {
+    const max = Math.max(a.loadRange.high * 1.3, ...a.loadHistory.map((p) => p.load), a.load) * 1.05
+    rows.push({
       label: 'Training load (last session)',
       today: `${a.load} AU`,
       usual: `${a.loadRange.low}–${a.loadRange.high}`,
@@ -243,11 +271,13 @@ function baselineRows(a: Athlete): BaselineRow[] {
       usualWidth: (a.loadRange.high - a.loadRange.low) / max,
       delta: `${a.loadChangePct > 0 ? '+' : ''}${a.loadChangePct}% vs recent baseline`,
       flagged: isLoadElevated(a.loadChangePct),
-    },
-  ]
+    })
+  }
+  return rows
 }
 
 function PersonalBaseline({ athlete: a }: { athlete: Athlete }) {
+  const rows = baselineRows(a)
   return (
     <section aria-labelledby="baseline-title" className={ui.card} style={{ gap: 16 }}>
       <div className={ui.titleBlock}>
@@ -256,7 +286,10 @@ function PersonalBaseline({ athlete: a }: { athlete: Athlete }) {
         </h2>
         <span className={ui.caption}>Today vs {a.firstName}’s usual</span>
       </div>
-      {baselineRows(a).map((row) => (
+      {rows.length === 0 && (
+        <p className={styles.quiet}>The baseline builds over {a.firstName}’s first 7–14 days of check-ins.</p>
+      )}
+      {rows.map((row) => (
         <div key={row.label} className={styles.baselineRow}>
           <div className={styles.baselineHead}>
             <span className={styles.baselineLabel}>{row.label}</span>
@@ -287,26 +320,17 @@ function PersonalBaseline({ athlete: a }: { athlete: Athlete }) {
 
 function Recovery({ athlete: a }: { athlete: Athlete }) {
   const declining = a.signals.some((s) => s.kind === 'Recovery signal')
+  const tile = (label: RecoveryMetric, value: number | null, usual: number | undefined) => ({
+    label,
+    value: value === null ? '—' : `${value}/5`,
+    usual: usual === undefined ? '—' : `${formatScore(usual)}/5`,
+    flagged: value !== null && usual !== undefined && isDeviating(label, value, usual),
+  })
   const tiles = [
-    { label: 'Sleep', value: a.sleep, usual: a.baseline.sleep, flagged: false },
-    {
-      label: 'Wellness',
-      value: `${a.wellness}/5`,
-      usual: `${a.baseline.wellness}/5`,
-      flagged: isDeviating('Wellness', a.wellness, a.baseline.wellness),
-    },
-    {
-      label: 'Fatigue',
-      value: `${a.fatigue}/5`,
-      usual: `${a.baseline.fatigue}/5`,
-      flagged: isDeviating('Fatigue', a.fatigue, a.baseline.fatigue),
-    },
-    {
-      label: 'Soreness',
-      value: `${a.soreness}/5`,
-      usual: `${a.baseline.soreness}/5`,
-      flagged: isDeviating('Soreness', a.soreness, a.baseline.soreness),
-    },
+    { label: 'Sleep', value: a.sleep ?? '—', usual: a.baseline?.sleep ?? '—', flagged: false },
+    tile('Wellness', a.wellness, a.baseline?.wellness),
+    tile('Fatigue', a.fatigue, a.baseline?.fatigue),
+    tile('Soreness', a.soreness, a.baseline?.soreness),
   ]
   return (
     <section aria-labelledby="recovery-title" className={ui.card}>
@@ -322,16 +346,18 @@ function Recovery({ athlete: a }: { athlete: Athlete }) {
           </div>
         ))}
       </div>
-      <p className={styles.trendLine} data-flagged={declining}>
-        {declining ? 'Recovery has declined over the last 3 days.' : `Recovery is within ${a.firstName}’s usual range.`}
-      </p>
+      {a.checkedInAt && a.baseline && (
+        <p className={styles.trendLine} data-flagged={declining}>
+          {declining ? 'Recovery has declined over the last 3 days.' : `Recovery is within ${a.firstName}’s usual range.`}
+        </p>
+      )}
     </section>
   )
 }
 
 function TrainingLoad({ athlete: a }: { athlete: Athlete }) {
-  const elevated = isLoadElevated(a.loadChangePct)
-  const signed = `${a.loadChangePct > 0 ? '+' : ''}${a.loadChangePct}%`
+  const change = a.loadChangePct
+  const elevated = change !== null && isLoadElevated(change)
   return (
     <section aria-labelledby="load-title" className={ui.card}>
       <div className={styles.loadHead}>
@@ -341,16 +367,22 @@ function TrainingLoad({ athlete: a }: { athlete: Athlete }) {
           </h2>
           <span className={ui.caption}>Session duration × RPE, in arbitrary units (AU)</span>
         </div>
-        <span className={cx(ui.pill, styles.loadPill)} data-tone={elevated ? 'review' : 'normal'}>
-          {elevated
-            ? `Load increased ${a.loadChangePct}% compared with recent baseline`
-            : `Load within usual range (${signed})`}
-        </span>
+        {change !== null && (
+          <span className={cx(ui.pill, styles.loadPill)} data-tone={elevated ? 'review' : 'normal'}>
+            {elevated
+              ? `Load increased ${change}% compared with recent baseline`
+              : `Load within usual range (${change > 0 ? '+' : ''}${change}%)`}
+          </span>
+        )}
       </div>
-      <LoadBarChart values={a.loadHistory} range={a.loadRange} start={LOAD_HISTORY_START} />
+      {a.loadHistory.length > 0 ? (
+        <LoadBarChart points={a.loadHistory} range={a.loadRange} />
+      ) : (
+        <p className={styles.quiet}>No post-training check-ins in the last 14 days.</p>
+      )}
       <p className={ui.caption}>
-        Training load is estimated from session duration and perceived exertion. Latest session: {a.lastSession} ={' '}
-        {a.load} AU.
+        Training load is estimated from session duration and perceived exertion.
+        {a.lastSession && a.load !== null && ` Latest session: ${a.lastSession} = ${a.load} AU.`}
       </p>
     </section>
   )
@@ -360,6 +392,8 @@ function CoachActionForm({ athlete: a }: { athlete: Athlete }) {
   const { recordAction } = useCoachStore()
   const [choice, setChoice] = useState<CoachAction | null>(null)
   const [notes, setNotes] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   return (
     <section aria-labelledby="action-title" className={ui.card}>
       <div className={ui.titleBlock}>
@@ -371,12 +405,20 @@ function CoachActionForm({ athlete: a }: { athlete: Athlete }) {
       <form
         className={styles.stack}
         style={{ gap: 14 }}
-        onSubmit={(e) => {
+        onSubmit={async (e) => {
           e.preventDefault()
-          if (!choice) return
-          recordAction(a.id, choice, notes)
-          setChoice(null)
-          setNotes('')
+          if (!choice || saving) return
+          setSaving(true)
+          setError(null)
+          try {
+            await recordAction(a.id, choice, notes)
+            setChoice(null)
+            setNotes('')
+          } catch (err) {
+            setError(`Couldn’t save the action. ${describeError(err)}`)
+          } finally {
+            setSaving(false)
+          }
         }}
       >
         <ActionChoice value={choice} onChange={setChoice} layout="grid" />
@@ -390,9 +432,14 @@ function CoachActionForm({ athlete: a }: { athlete: Athlete }) {
             placeholder={`e.g. Spoke with ${a.firstName} before training; sat out contact drills.`}
           />
         </label>
+        {error && (
+          <p className={styles.formError} role="alert">
+            {error}
+          </p>
+        )}
         <div>
-          <Button type="submit" size="md" disabled={!choice}>
-            Save action
+          <Button type="submit" size="md" disabled={!choice || saving}>
+            {saving ? 'Saving…' : 'Save action'}
           </Button>
         </div>
       </form>

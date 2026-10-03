@@ -5,6 +5,7 @@ import { ChipGroup } from '../../components/ui/ChipGroup'
 import { Icon } from '../../components/ui/Icon'
 import { Input } from '../../components/ui/Input'
 import { Logo } from '../../components/ui/Logo'
+import { SampleDataNote } from '../../components/ui/SampleDataNote'
 import { TEAM } from '../../data/team'
 import { useTitle } from '../../lib/useTitle'
 import { paths } from '../../navigation/paths'
@@ -70,6 +71,7 @@ export function TeamSetup() {
       </ol>
 
       <div className={styles.card}>
+        <SampleDataNote>Team setup isn’t connected to the server yet, so nothing here is saved.</SampleDataNote>
         {step === 0 && (
           <>
             <div className={styles.heading}>

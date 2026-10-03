@@ -1,5 +1,7 @@
 import { TEAM_BASELINE } from '../../data/team'
+import { formatScore } from '../../domain/signals'
 import type { TeamSummary } from '../../domain/team'
+import { DATA_SOURCE } from '../../sources'
 import { STATUS_LABELS, type Athlete, type Status } from '../../domain/types'
 import { paths } from '../../navigation/paths'
 
@@ -96,36 +98,48 @@ export function answerFor(id: QuestionId, team: TeamSummary): Answer {
           : n
             ? 'Not a team-level pattern — check in with them individually.'
             : 'Nobody reported fatigue above their usual level today.',
-        rows: team.fatigueAboveUsual.map((a) => athleteRow(a, `Fatigue ${a.fatigue}/5 vs usual ${a.baseline.fatigue}/5`)),
+        rows: team.fatigueAboveUsual.map((a) =>
+          athleteRow(a, `Fatigue ${a.fatigue}/5 vs usual ${a.baseline ? formatScore(a.baseline.fatigue) : '—'}/5`),
+        ),
         bullets: [],
         cta: n ? { label: 'View in Athletes', to: paths.athletes('fatigue') } : undefined,
       }
     }
     case 'week':
-      return {
-        title: 'Compared with last week',
-        rows: [],
-        bullets: [
-          'Average fatigue increased 14%.',
-          'Training load is 12% above the recent baseline.',
-          'Check-in completion is steady at 92%.',
-          '2 athletes reported safety symptoms (0 last week).',
-        ],
-      }
-    case 'summary':
+      // Week-on-week figures need the trends endpoint; until then only the sample team has them.
+      return DATA_SOURCE === 'api'
+        ? {
+            title: 'Compared with last week',
+            intro: 'Week-on-week comparisons arrive with the team trends API.',
+            rows: [],
+            bullets: [],
+          }
+        : {
+            title: 'Compared with last week',
+            rows: [],
+            bullets: [
+              'Average fatigue increased 14%.',
+              'Training load is 12% above the recent baseline.',
+              'Check-in completion is steady at 92%.',
+              '2 athletes reported safety symptoms (0 last week).',
+            ],
+          }
+    case 'summary': {
+      const wellness = team.averages.wellness
       return {
         title: 'Today’s team health',
         rows: [],
         bullets: [
           `${team.checkedIn} of ${team.size} athletes checked in.`,
-          `${team.normal.length} within their usual range, ${team.review.length} need review, ${team.high.length} high priority.`,
+          `${team.normal.length} without flags, ${team.review.length} need review, ${team.high.length} high priority.`,
           ...(team.showPattern
             ? [`Fatigue is elevated across ${team.fatigueAboveUsual.length} athletes — likely a shared cause.`]
             : []),
-          `Average wellness ${team.averages.wellness.toFixed(1)} / 5 (usual ${TEAM_BASELINE.wellness}).`,
+          ...(wellness === null ? [] : [`Average wellness ${wellness.toFixed(1)} / 5 (usual ${TEAM_BASELINE.wellness}).`]),
         ],
         cta: { label: 'Open overview', to: paths.overview },
       }
+    }
   }
 }
 

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Button } from '../../components/ui/Button'
+import { SampleDataNote } from '../../components/ui/SampleDataNote'
 import { buildReport, REPORT_PERIOD, REPORT_TYPES, type ReportKind } from '../../data/reports'
-import { TEAM } from '../../data/team'
 import { cx } from '../../lib/cx'
 import { downloadFile, toCsv } from '../../lib/download'
 import { useTitle } from '../../lib/useTitle'
@@ -11,7 +11,7 @@ import styles from './Reports.module.css'
 
 export function Reports() {
   useTitle('Reports')
-  const { roster, team, actions, audit, showToast } = useCoachStore()
+  const { roster, team, teamInfo, actions, audit, showToast } = useCoachStore()
   const [kind, setKind] = useState<ReportKind>('weekly')
   const type = REPORT_TYPES.find((t) => t.kind === kind) ?? REPORT_TYPES[0]
   const report = buildReport(kind, { roster, flagged: team.flagged, actions, audit })
@@ -28,6 +28,9 @@ export function Reports() {
         <h1 className={ui.pageTitle}>Reports</h1>
         <p className={ui.pageLead}>Share with your club, welfare officer or parents.</p>
       </header>
+      <SampleDataNote>
+        Weekly figures are sample data until the reports API exists; alerts, actions and the roster are real.
+      </SampleDataNote>
       <div className={styles.layout}>
         <div className={styles.types} role="group" aria-label="Report type">
           {REPORT_TYPES.map((t) => (
@@ -42,7 +45,7 @@ export function Reports() {
           <div className={styles.previewHead}>
             <div className={styles.previewTitle}>
               <span className={styles.period}>
-                {TEAM.name} · {REPORT_PERIOD}
+                {teamInfo.name} · {REPORT_PERIOD}
               </span>
               <h2 className={styles.title}>{type.title}</h2>
             </div>

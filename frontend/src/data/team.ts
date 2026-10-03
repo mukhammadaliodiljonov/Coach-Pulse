@@ -17,6 +17,7 @@ export const TEAM = {
 
 /** All sample data is anchored to this day. */
 export const DEMO_DAY = 'Monday, October 5'
+export const DEMO_DATE = new Date(2026, 9, 5)
 
 /** Team averages over the previous 21 days — the dashed "usual" lines. */
 export const TEAM_BASELINE = {

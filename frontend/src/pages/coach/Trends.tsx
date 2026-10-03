@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { AreaSparkline } from '../../components/charts/AreaSparkline'
 import { ChipGroup } from '../../components/ui/ChipGroup'
+import { SampleDataNote } from '../../components/ui/SampleDataNote'
 import { buildTrendMetrics, TREND_RANGES, trendDay, trendInsights, type TrendMetric, type TrendRange } from '../../data/trends'
 import { cx } from '../../lib/cx'
 import { useTitle } from '../../lib/useTitle'
@@ -45,6 +46,7 @@ export function Trends() {
           options={TREND_RANGES.map((r) => ({ value: r, label: `${r} days` }))}
         />
       </header>
+      <SampleDataNote>History is sample data until the team trends API exists; today’s values are real.</SampleDataNote>
 
       <div className={styles.insights}>
         {trendInsights(range, team.fatigueAboveUsual.length).map((insight) => (

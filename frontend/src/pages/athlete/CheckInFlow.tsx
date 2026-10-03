@@ -1,9 +1,9 @@
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
 import { Navigate, useNavigate, useParams } from 'react-router'
+import { describeError } from '../../api/client'
 import { Button } from '../../components/ui/Button'
 import { Icon } from '../../components/ui/Icon'
 import {
-  ATHLETE_SELF,
   DAILY_QUESTIONS,
   NONE_OF_THESE,
   POST_LISTS,
@@ -12,6 +12,7 @@ import {
   SESSION_DURATIONS,
   type DailyAnswers,
 } from '../../data/athleteApp'
+import { SYMPTOMS, type Symptom } from '../../domain/types'
 import { cx } from '../../lib/cx'
 import { useTitle } from '../../lib/useTitle'
 import { paths, type CheckInFlow as Flow } from '../../navigation/paths'
@@ -49,6 +50,14 @@ const EMPTY: Answers = {
   symptoms: [],
 }
 
+const isSymptom = (option: string): option is Symptom => (SYMPTOMS as readonly string[]).includes(option)
+
+/** Weights are optional; anything that isn't a positive number is left out. */
+function parseWeight(value: string): number | null {
+  const kg = Number.parseFloat(value)
+  return Number.isFinite(kg) && kg > 0 ? kg : null
+}
+
 export function CheckInFlow() {
   const { flow } = useParams()
   if (flow !== 'daily' && flow !== 'post') return <Navigate to={paths.athleteApp.home} replace />
@@ -58,10 +67,13 @@ export function CheckInFlow() {
 function CheckIn({ flow }: { flow: Flow }) {
   useTitle(flow === 'daily' ? 'Daily check-in' : 'Post-training check-in')
   const navigate = useNavigate()
-  const { completeCheckIn } = useAthleteStore()
+  const { submitDaily, submitPostTraining, snapshot } = useAthleteStore()
+  const firstName = snapshot?.profile.firstName
   const steps = STEPS[flow]
   const [index, setIndex] = useState(0)
   const [answers, setAnswers] = useState<Answers>(EMPTY)
+  const [sending, setSending] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
   const headingRef = useRef<HTMLHeadingElement>(null)
 
@@ -85,12 +97,44 @@ function CheckIn({ flow }: { flow: Flow }) {
     done: true,
   }
 
-  const next = () => {
+  const send = async () => {
+    const symptoms = answers.symptoms.filter(isSymptom)
+    if (flow === 'daily') {
+      const { sleep, fatigue, soreness, wellness } = answers.daily
+      if (!sleep || !fatigue || !soreness || !wellness) throw new Error('Answer every question first.')
+      await submitDaily({ sleep, fatigue, soreness, wellness, symptoms })
+      return
+    }
+    const { rpe, tired, sore, duration } = answers
+    if (rpe === null || tired === null || sore === null || duration === null) throw new Error('Answer every question first.')
+    await submitPostTraining({
+      rpe,
+      tiredness: tired,
+      soreness: sore,
+      durationMinutes: duration,
+      weightBeforeKg: parseWeight(answers.weightBefore),
+      weightAfterKg: parseWeight(answers.weightAfter),
+      symptoms,
+    })
+  }
+
+  const next = async () => {
     if (step === 'done') {
       navigate(paths.athleteApp.home)
       return
     }
-    if (step === 'safety') completeCheckIn(flow, flow === 'daily' ? (answers.daily as DailyAnswers) : undefined)
+    if (step === 'safety') {
+      setSending(true)
+      setError(null)
+      try {
+        await send()
+      } catch (e) {
+        setError(`Your check-in wasn’t sent. ${describeError(e)}`)
+        return
+      } finally {
+        setSending(false)
+      }
+    }
     setIndex(index + 1)
   }
 
@@ -310,15 +354,28 @@ function CheckIn({ flow }: { flow: Flow }) {
               <Icon name="done" size={38} />
             </span>
             {heading('Check-in complete')}
-            <p className={styles.thanks}>Thanks, {ATHLETE_SELF.firstName}.</p>
+            <p className={styles.thanks}>Thanks{firstName ? `, ${firstName}` : ''}.</p>
             <p className={styles.doneText}>Your coach can review your wellness information if follow-up is needed.</p>
           </div>
         )}
       </div>
 
       <div className={styles.footer}>
-        <Button fullWidth disabled={!answered[step]} onClick={next}>
-          {step === 'done' ? 'Back to home' : step === 'safety' ? 'Submit check-in' : 'Continue'}
+        {error && (
+          <p className={cx(shared.error, styles.sendError)} role="alert">
+            {error}
+          </p>
+        )}
+        <Button fullWidth disabled={!answered[step] || sending} onClick={next}>
+          {step === 'done'
+            ? 'Back to home'
+            : step === 'safety'
+              ? sending
+                ? 'Sending…'
+                : error
+                  ? 'Try again'
+                  : 'Submit check-in'
+              : 'Continue'}
         </Button>
       </div>
     </>

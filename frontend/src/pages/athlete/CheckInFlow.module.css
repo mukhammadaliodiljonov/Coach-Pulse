@@ -351,3 +351,7 @@
   border-top: 1px solid var(--cp-divider);
   background: var(--cp-surface);
 }
+
+.sendError {
+  margin-bottom: 12px;
+}

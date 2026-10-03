@@ -1,3 +1,4 @@
+import { SampleDataNote } from '../../components/ui/SampleDataNote'
 import { SCHEDULE } from '../../data/athleteApp'
 import { useTitle } from '../../lib/useTitle'
 import styles from './athlete.module.css'
@@ -10,6 +11,7 @@ export function AthleteSchedule() {
         <h1 className={styles.title}>Schedule</h1>
         <p className={styles.leadSmall}>Post-training check-in opens after each session.</p>
       </div>
+      <SampleDataNote>The schedule is sample data until the sessions API exists.</SampleDataNote>
       <ul className={styles.list}>
         {SCHEDULE.map((s, i) => (
           <li key={s.day} className={styles.slot} data-today={i === 0}>

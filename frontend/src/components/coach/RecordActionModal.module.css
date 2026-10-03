@@ -55,6 +55,16 @@
   color: var(--cp-text-muted);
 }
 
+.error {
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--cp-high-bg);
+  color: var(--cp-high-fg);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
 .actions {
   display: flex;
   justify-content: flex-end;

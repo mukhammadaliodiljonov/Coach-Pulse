@@ -5,7 +5,7 @@ import { ChipGroup } from '../../components/ui/ChipGroup'
 import { Input } from '../../components/ui/Input'
 import { Segmented } from '../../components/ui/Segmented'
 import { StatusBadge } from '../../components/ui/StatusBadge'
-import { hasFatigueAboveUsual, isDeviating, isLoadElevated } from '../../domain/signals'
+import { formatScore, hasFatigueAboveUsual, isDeviating, isLoadElevated } from '../../domain/signals'
 import type { Athlete } from '../../domain/types'
 import { MOBILE_QUERY, useMediaQuery } from '../../lib/useMediaQuery'
 import { useTitle } from '../../lib/useTitle'
@@ -46,21 +46,23 @@ interface MetricCell {
 }
 
 function metricCells(a: Athlete): MetricCell[] {
-  const scale = (label: 'Wellness' | 'Fatigue' | 'Soreness', value: number, usual: number): MetricCell => ({
+  // A dash while today's check-in is pending; "no baseline" during the first weeks.
+  const scale = (label: 'Wellness' | 'Fatigue' | 'Soreness', value: number | null, usual: number | undefined): MetricCell => ({
     label,
-    value: `${value}/5`,
-    usual: `usual ${usual}`,
-    flagged: isDeviating(label, value, usual),
+    value: value === null ? '—' : `${value}/5`,
+    usual: usual === undefined ? 'no baseline' : `usual ${formatScore(usual)}`,
+    flagged: value !== null && usual !== undefined && isDeviating(label, value, usual),
   })
+  const change = a.loadChangePct
   return [
-    scale('Wellness', a.wellness, a.baseline.wellness),
-    scale('Fatigue', a.fatigue, a.baseline.fatigue),
-    scale('Soreness', a.soreness, a.baseline.soreness),
+    scale('Wellness', a.wellness, a.baseline?.wellness),
+    scale('Fatigue', a.fatigue, a.baseline?.fatigue),
+    scale('Soreness', a.soreness, a.baseline?.soreness),
     {
       label: 'Load',
-      value: `${a.loadChangePct > 0 ? '+' : ''}${a.loadChangePct}%`,
-      usual: `${a.load} AU`,
-      flagged: isLoadElevated(a.loadChangePct),
+      value: change === null ? '—' : `${change > 0 ? '+' : ''}${change}%`,
+      usual: a.load === null ? 'no sessions' : `${a.load} AU`,
+      flagged: change !== null && isLoadElevated(change),
     },
   ]
 }
@@ -173,7 +175,7 @@ function AthleteTable({ rows }: { rows: Athlete[] }) {
                   <Avatar initials={a.initials} size={36} status={a.status} />
                   <div className={styles.athleteText}>
                     <span className={styles.name}>{a.name}</span>
-                    <span className={styles.position}>{a.position}</span>
+                    <span className={styles.position}>{a.position ?? 'Athlete'}</span>
                   </div>
                 </div>
               </td>
@@ -213,7 +215,7 @@ function AthleteCards({ rows }: { rows: Athlete[] }) {
             <div className={styles.athleteText}>
               <span className={styles.cardName}>{a.name}</span>
               <span className={styles.position}>
-                {a.position} · {a.checkedInAt ?? 'Pending'}
+                {a.position ?? 'Athlete'} · {a.checkedInAt ?? 'Pending'}
               </span>
             </div>
           </div>

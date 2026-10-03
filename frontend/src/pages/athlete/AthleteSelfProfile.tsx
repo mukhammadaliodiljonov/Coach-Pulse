@@ -1,9 +1,9 @@
 import { useNavigate } from 'react-router'
 import { Avatar } from '../../components/ui/Avatar'
 import { Button } from '../../components/ui/Button'
+import { SampleDataNote } from '../../components/ui/SampleDataNote'
 import { Toggle } from '../../components/ui/Toggle'
 import { ATHLETE_SELF, REMINDERS } from '../../data/athleteApp'
-import { TEAM } from '../../data/team'
 import { useTitle } from '../../lib/useTitle'
 import { paths } from '../../navigation/paths'
 import { useAthleteStore } from '../../state/athleteStore'
@@ -11,17 +11,20 @@ import styles from './athlete.module.css'
 
 export function AthleteSelfProfile() {
   useTitle('Profile')
-  const { reminders, toggleReminder, signOut } = useAthleteStore()
+  const { snapshot, reminders, toggleReminder, signOut } = useAthleteStore()
   const navigate = useNavigate()
+  if (!snapshot) return null
+  const { profile } = snapshot
 
   return (
     <div className={styles.stack} style={{ gap: 16 }}>
       <div className={styles.identity}>
-        <Avatar initials={ATHLETE_SELF.initials} size={64} />
+        <Avatar initials={profile.initials} size={64} />
         <div className={styles.heading} style={{ gap: 2 }}>
-          <h1 className={styles.identityName}>{ATHLETE_SELF.name}</h1>
+          <h1 className={styles.identityName}>{profile.name}</h1>
           <span className={styles.sessionMeta}>
-            {ATHLETE_SELF.position} · {TEAM.name}
+            {profile.position ? `${profile.position} · ` : ''}
+            {profile.teamName}
           </span>
         </div>
       </div>
@@ -40,10 +43,11 @@ export function AthleteSelfProfile() {
         <span className={styles.toggleLabel}>Parent / guardian</span>
         <span className={styles.infoText}>{ATHLETE_SELF.guardian}</span>
       </div>
+      <SampleDataNote>Reminders and the guardian contact are sample data until the profile API exists.</SampleDataNote>
       <div className={styles.plainCard}>
         <span className={styles.toggleLabel}>Who can see my answers</span>
         <span className={styles.plainText}>
-          Coach {TEAM.coach.name} and assistant coach Priya Shah. CoachPulse doesn’t share your answers with teammates.
+          {profile.visibleTo}. CoachPulse doesn’t share your answers with teammates.
         </span>
       </div>
       <Button

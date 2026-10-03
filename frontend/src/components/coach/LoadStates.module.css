@@ -1,0 +1,68 @@
+.skeleton {
+  max-width: var(--content-max);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.block {
+  border-radius: var(--radius-card-sm);
+  background: var(--cp-track);
+}
+
+.row {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.pair {
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+.offline {
+  max-width: var(--content-max);
+  margin: 0 auto 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 14px 18px;
+  border-radius: 18px;
+  background: var(--cp-dark);
+  color: #fff;
+}
+
+.offlineText {
+  flex: 1;
+  min-width: 220px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.retry {
+  height: 40px;
+  padding: 0 18px;
+  border: none;
+  border-radius: 14px;
+  background: #fff;
+  color: var(--cp-text);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.retry:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.error {
+  max-width: 560px;
+  margin: 24px auto 0;
+}
+
+.errorDetail {
+  max-width: 420px;
+  line-height: 1.5;
+}

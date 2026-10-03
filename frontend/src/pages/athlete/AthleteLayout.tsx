@@ -28,10 +28,24 @@ const TABS: { to: string; label: string; icon: IconName; end?: boolean }[] = [
   { to: paths.athleteApp.profile, label: 'Profile', icon: 'user' },
 ]
 
+/** Shown inside the phone while signing in. */
+function Signing() {
+  return (
+    <div className={styles.scroll}>
+      <div className={styles.signing} aria-busy="true" aria-label="Loading">
+        <div className={styles.signingBlock} style={{ height: 32, width: 140 }} />
+        <div className={styles.signingBlock} style={{ height: 30, width: '70%' }} />
+        <div className={styles.signingBlock} style={{ height: 96 }} />
+        <div className={styles.signingBlock} style={{ height: 96 }} />
+      </div>
+    </div>
+  )
+}
+
 /** Signed-in screens with the floating bottom nav. */
 export function AthleteTabs() {
-  const { signedIn } = useAthleteStore()
-  if (!signedIn) return <Navigate to={paths.athleteApp.login} replace />
+  const { signedIn, loading } = useAthleteStore()
+  if (!signedIn) return loading ? <Signing /> : <Navigate to={paths.athleteApp.login} replace />
   return (
     <>
       <div className={styles.scroll}>
@@ -53,6 +67,7 @@ export function AthleteTabs() {
 
 /** Check-in flows hide the nav but still need a signed-in athlete. */
 export function RequireAthlete() {
-  const { signedIn } = useAthleteStore()
-  return signedIn ? <Outlet /> : <Navigate to={paths.athleteApp.login} replace />
+  const { signedIn, loading } = useAthleteStore()
+  if (signedIn) return <Outlet />
+  return loading ? <Signing /> : <Navigate to={paths.athleteApp.login} replace />
 }

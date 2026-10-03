@@ -32,6 +32,30 @@
   color: var(--cp-text-secondary);
 }
 
+.fact {
+  display: inline-flex;
+  gap: 10px;
+}
+
+.quiet {
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: var(--cp-fill);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--cp-text-secondary);
+}
+
+.formError {
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--cp-high-bg);
+  color: var(--cp-high-fg);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
 .statusColumn {
   display: flex;
   flex-direction: column;
