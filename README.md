@@ -12,8 +12,21 @@ export JWT_SECRET="$(openssl rand -base64 32)"
 JWTs use HS256 and expire after 15 minutes by default. Set
 `app.security.jwt.expiration` to another ISO-8601 duration to change the
 lifetime. Tokens contain only the subject (user ID), the user's `role`, the
-issued-at time, and the expiration time. Bearer tokens are validated by Spring
-Security; endpoint authorization will be added separately.
+issued-at time, and the expiration time.
+
+## Protected endpoints
+
+Every API route requires a valid JWT in the `Authorization: Bearer <token>`
+header, except `POST /api/auth/register`, `POST /api/auth/login`, and
+`POST /api/auth/logout`. The token's signature, expiration, and `role` claim are
+verified before the request reaches a controller. Missing, malformed, tampered,
+expired, or wrongly signed tokens return `401` with a `WWW-Authenticate: Bearer`
+header. Tokens in query parameters or form bodies are not accepted, and public
+auth endpoints ignore any bearer token so a stale one cannot block login.
+
+Controllers read the verified identity from the authentication context, for
+example `@AuthenticationPrincipal Jwt jwt` and `jwt.getSubject()` for the user
+ID. Never take the user ID or role from request bodies, headers, or parameters.
 
 ## User roles
 
