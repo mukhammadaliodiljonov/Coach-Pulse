@@ -7,8 +7,8 @@ design handoff (`design_handoff_coachpulse`). React 19 + TypeScript + Vite, Reac
 
 ```bash
 npm install
-npm run dev      # sample data, http://localhost:5173
-npm run dev:api  # the Spring Boot backend on :8080 instead of sample data
+npm run dev       # the Spring Boot backend on :8080, http://localhost:5173
+npm run dev:mock  # sample data instead of the backend (no sign-in needed)
 npm test         # signal engine, API adapters, client, CSV (Vitest)
 npm run lint     # oxlint
 npm run build    # type-check + production build
@@ -18,17 +18,17 @@ npm run build    # type-check + production build
 
 The app reads everything through a data source (`src/sources/`):
 
-- **Sample data** (default) — a fictional team from the design handoff, kept in memory. Actions and check-ins you
-  save last until you reload.
-- **Backend** — set `VITE_DATA_SOURCE=api` (that's what `npm run dev:api` does, via `.env.api`). Requests go to
-  `/api`, which the dev server proxies to `API_PROXY_TARGET` (default `http://localhost:8080`). See `.env.example`.
+- **Backend** (default) — requests go to `/api`, which the dev server proxies to `API_PROXY_TARGET` (default
+  `http://localhost:8080`). Start the Spring Boot app first. See `.env.example`.
+- **Sample data** — set `VITE_DATA_SOURCE=mock` (that's what `npm run dev:mock` does, via `.env.mock`): a fictional
+  team from the design handoff, kept in memory. Actions and check-ins you save last until you reload.
 
 The backend doesn't have these endpoints yet: the contract the app expects is in
 [`docs/api-contract.md`](../docs/api-contract.md), with the TypeScript shapes in `src/api/types.ts`. In backend mode
 the app shows real loading, error and offline states, refreshes every minute, and marks the screens whose endpoints
 come later (sessions, trends, reports, settings, team setup, sign-in) as sample data.
 
-### Sign-in and protected routes (backend mode)
+### Sign-in and protected routes
 
 With the backend, both apps need a real sign-in (`POST /api/auth/login`); with sample data they stay an open
 demo. The code is in `src/auth/`:
@@ -45,7 +45,7 @@ demo. The code is in `src/auth/`:
 
 ### Demo scenarios (sample data)
 
-Append `?scenario=` to the first URL you open:
+With `npm run dev:mock`, append `?scenario=` to the first URL you open:
 
 | Scenario | Shows |
 |---|---|
