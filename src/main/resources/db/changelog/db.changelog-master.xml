@@ -13,5 +13,6 @@
     <include file="changes/006-create-workout-checkins.xml" relativeToChangelogFile="true"/>
     <include file="changes/007-create-risk-assessments.xml" relativeToChangelogFile="true"/>
     <include file="changes/008-create-alerts.xml" relativeToChangelogFile="true"/>
+    <include file="changes/009-add-user-password-hash.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

@@ -18,6 +18,8 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.crypto.password.Pbkdf2PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
@@ -43,6 +45,11 @@ public class JwtSecurityConfiguration {
         return NimbusJwtDecoder.withSecretKey(jwtSecretKey)
                 .macAlgorithm(MacAlgorithm.HS256)
                 .build();
+    }
+
+    @Bean
+    PasswordEncoder passwordEncoder() {
+        return Pbkdf2PasswordEncoder.defaultsForSpringSecurity_v5_8();
     }
 
     @Bean
