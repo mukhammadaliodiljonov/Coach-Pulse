@@ -14,5 +14,6 @@
     <include file="changes/007-create-risk-assessments.xml" relativeToChangelogFile="true"/>
     <include file="changes/008-create-alerts.xml" relativeToChangelogFile="true"/>
     <include file="changes/009-add-user-password-hash.xml" relativeToChangelogFile="true"/>
+    <include file="changes/010-add-team-setup-columns.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

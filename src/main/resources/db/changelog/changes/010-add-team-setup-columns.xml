@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+            https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="010-add-team-setup-columns" author="coach-pulse">
+        <!-- Team setup wizard fields and the code athletes use to join. Existing teams keep nulls. -->
+        <addColumn tableName="teams">
+            <column name="age_group" type="VARCHAR(20)"/>
+            <column name="training_frequency" type="VARCHAR(30)"/>
+            <column name="join_code" type="VARCHAR(12)">
+                <constraints unique="true" uniqueConstraintName="uq_teams_join_code"/>
+            </column>
+        </addColumn>
+
+        <!-- NOT VALID: enforced for new and updated rows without failing on any existing data. -->
+        <sql>ALTER TABLE team_members ADD CONSTRAINT ck_team_members_member_role
+            CHECK (member_role IN ('HEAD_COACH', 'ASSISTANT_COACH', 'ATHLETE')) NOT VALID</sql>
+        <rollback>
+            <sql>ALTER TABLE team_members DROP CONSTRAINT ck_team_members_member_role</sql>
+            <dropColumn tableName="teams" columnName="join_code"/>
+            <dropColumn tableName="teams" columnName="training_frequency"/>
+            <dropColumn tableName="teams" columnName="age_group"/>
+        </rollback>
+    </changeSet>
+</databaseChangeLog>

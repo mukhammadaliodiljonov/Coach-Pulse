@@ -1,7 +1,8 @@
 # CoachPulse API contract (proposed)
 
-**Status:** proposed by the web front end, for the backend to implement. Nothing here exists in the Spring Boot
-app yet. The web app is built against it and keeps its sample data until the endpoints land.
+**Status:** proposed by the web front end, for the backend to implement. **Implemented so far:** `GET /api/me`,
+`POST /api/teams`, `GET /api/teams/{teamId}`, `.../athletes/today`, `.../alerts` and `.../activity` (see the notes
+under each). The athlete endpoints and `POST /api/athletes/{athleteId}/actions` don't exist yet.
 
 - TypeScript mirror of every shape: [`frontend/src/api/types.ts`](../frontend/src/api/types.ts)
 - How the web app maps it onto screens: [`frontend/src/api/adapters.ts`](../frontend/src/api/adapters.ts)
@@ -51,6 +52,19 @@ app yet. The web app is built against it and keeps its sample data until the end
 
 `athleteId` is the `athlete_profiles.id` when the user is an athlete. The coach app uses the first team where
 `memberRole` isn’t `ATHLETE`.
+
+### `POST /api/teams`
+
+Creates a team from the setup wizard; the signed-in coach becomes its `HEAD_COACH`. `COACH` or `ADMIN` only.
+
+```json
+{ "name": "Northside U17", "sport": "Football", "ageGroup": "U17", "trainingFrequency": "3–4 per week" }
+```
+
+`name` (≤150) and `sport` (≤100) are required. Responds `201` with the team, as `GET /api/teams/{teamId}` returns it,
+including a generated `joinCode`.
+
+All `/api/teams/{teamId}…` endpoints answer `404` unless the caller is one of the team's coaches.
 
 ### `GET /api/teams/{teamId}`
 
@@ -118,6 +132,10 @@ the coach app.
 - `assessment` — today’s result from the server’s signal engine, once it exists (see below). While it’s `null` the web
   app evaluates the check-in itself with the same rules.
 - `alert` — today’s alert, if one was raised, with the latest coach action on it.
+
+**Implemented with these gaps** until the schema changes below land: `position`, `baseline`, `assessment`,
+`latestAction`, and the workout's `tiredness`/`muscleSoreness` are always `null`; morning `symptoms` are always `[]`.
+“Today” is the server's time zone.
 
 ### `GET /api/teams/{teamId}/alerts?status=RESOLVED&limit=20`
 

@@ -75,3 +75,18 @@ message whether the email is unknown or the password is wrong.
 `POST /api/auth/logout` returns `204 No Content`. JWTs are stateless, so logout
 means the client discards its token; a previously issued token remains valid
 until it expires. Clients should remove the token from local storage on logout.
+
+## Teams and the coach dashboard
+
+`GET /api/me` returns the signed-in user, their athlete profile id (athletes
+only), and their team memberships.
+
+`POST /api/teams` (COACH or ADMIN) creates a team with `name`, `sport`, and
+optional `ageGroup` and `trainingFrequency`. The caller becomes its
+`HEAD_COACH`, and the team gets a unique join code such as `D5C-F29T`.
+
+The dashboard reads `GET /api/teams/{teamId}`, `/athletes/today`,
+`/alerts?status=&limit=`, and `/activity?limit=` (limits are capped at 100).
+These answer `404` unless the caller coaches the team, so team ids cannot be
+probed. Formats are in `docs/api-contract.md`. "Today" is the calendar day in
+the server's time zone.
