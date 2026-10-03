@@ -1,0 +1,107 @@
+@import './tokens.css';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--cp-bg);
+  color: var(--cp-text);
+  font-family: var(--font);
+  font-size: 14px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.2;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+a {
+  color: var(--cp-primary);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--cp-primary-pressed);
+  text-decoration: underline;
+}
+
+*:focus-visible {
+  outline: 3px solid var(--cp-primary);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: var(--cp-primary-container);
+  color: var(--cp-on-primary-container);
+}
+
+/* "Export PDF" prints only the element marked as the print area. */
+@media print {
+  body {
+    background: #fff;
+  }
+
+  body * {
+    visibility: hidden;
+  }
+
+  [data-print-area],
+  [data-print-area] * {
+    visibility: visible;
+  }
+
+  [data-print-area] {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    box-shadow: none !important;
+  }
+
+  [data-print-hide] {
+    display: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

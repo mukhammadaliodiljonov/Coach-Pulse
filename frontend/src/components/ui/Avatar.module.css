@@ -1,0 +1,30 @@
+/* Avatars are rounded rectangles, never circles. */
+.avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-weight: 800;
+  background: var(--cp-primary-container);
+  color: var(--cp-primary-pressed);
+}
+
+.avatar[data-status='high'] {
+  background: var(--cp-high-bg);
+  color: var(--cp-high-fg);
+}
+
+.avatar[data-status='review'] {
+  background: var(--cp-review-bg);
+  color: var(--cp-review-fg);
+}
+
+/* On a status-tinted header the avatar sits on white. */
+.onTint {
+  background: var(--cp-surface) !important;
+}
+
+.dark {
+  background: var(--cp-dark);
+  color: #fff;
+}

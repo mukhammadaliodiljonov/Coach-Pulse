@@ -1,0 +1,63 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.heading {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.title {
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: var(--cp-text-secondary);
+}
+
+.close {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 12px;
+  background: var(--cp-bg);
+  color: var(--cp-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.prompt {
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--cp-primary-container);
+  color: var(--cp-on-primary-container);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.hint {
+  font-size: 12px;
+  color: var(--cp-text-muted);
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}

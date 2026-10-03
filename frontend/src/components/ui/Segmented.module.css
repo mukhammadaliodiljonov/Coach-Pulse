@@ -1,0 +1,38 @@
+.group {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 16px;
+  background: var(--cp-bg);
+}
+
+.group.toggle {
+  background: var(--cp-surface);
+  box-shadow: var(--shadow-hairline);
+}
+
+.option {
+  height: 36px;
+  padding: 0 14px;
+  border: none;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--cp-text-secondary);
+  font-size: 13px;
+  font-weight: 800;
+  white-space: nowrap;
+  transition:
+    background var(--dur-base) var(--ease),
+    color var(--dur-base) var(--ease);
+}
+
+.tabs .option[aria-selected='true'] {
+  background: var(--cp-surface);
+  color: var(--cp-primary-pressed);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.toggle .option[aria-pressed='true'] {
+  background: var(--cp-primary-container);
+  color: var(--cp-primary-pressed);
+}

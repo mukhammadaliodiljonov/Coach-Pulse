@@ -1,0 +1,76 @@
+/* CoachPulse design tokens — from the design handoff (DZ / iBook visual base). */
+:root {
+  /* Brand */
+  --cp-primary: #6556ff;
+  --cp-primary-pressed: #5346db;
+  --cp-primary-container: #e8e5ff;
+  --cp-on-primary-container: #1a0060;
+  --cp-primary-light: #beb6ff;
+  --cp-primary-wash: #f3f1ff;
+
+  /* Surfaces */
+  --cp-bg: #f0f2f6;
+  --cp-surface: #ffffff;
+  --cp-fill: #f6f6f7;
+  --cp-track: #e4e6ec;
+  --cp-dark: #303030;
+
+  /* Text & lines */
+  --cp-text: #303030;
+  --cp-text-secondary: #4a4a55;
+  --cp-text-muted: #6b6b76;
+  --cp-outline: #c5c5c6;
+  --cp-divider: #ececec;
+  --cp-baseline: #9c9ca6;
+  --cp-usual-band: #bdbdc6;
+
+  /* Status — never color-only: always icon shape + label + reason */
+  --cp-high-fg: #9a0019;
+  --cp-high-bg: #fdecee;
+  --cp-high-solid: #c4122f;
+  --cp-high-tile: #fdf3f4;
+  --cp-high-row: #fffbfb;
+  --cp-high-outline: #f4b4be;
+
+  --cp-review-fg: #6b4a00;
+  --cp-review-bg: #fff3c4;
+  --cp-review-solid: #f2b600;
+  --cp-review-glyph: #3d2a00;
+  --cp-review-tile: #fffbeb;
+  --cp-review-stroke: #d49b00;
+
+  --cp-normal-fg: #0b6b3a;
+  --cp-normal-bg: #e3f7eb;
+  --cp-normal-solid: #17a35e;
+
+  /* Shadows */
+  --shadow-hairline: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.06);
+  --shadow-card: 0 8px 24px rgba(17, 17, 28, 0.08);
+  --shadow-brand: 0 12px 26px rgba(101, 86, 255, 0.3);
+  --shadow-nav: 0 14px 28px rgba(0, 0, 0, 0.18), 0 6px 12px rgba(0, 0, 0, 0.1);
+  --shadow-popover: 0 18px 48px rgba(17, 17, 28, 0.18);
+  --shadow-modal: 0 24px 60px rgba(17, 17, 28, 0.25);
+  --shadow-phone: 0 30px 60px rgba(17, 17, 28, 0.18);
+
+  /* Radii */
+  --radius-control: 20px;
+  --radius-card: 22px;
+  --radius-card-sm: 20px;
+  --radius-header: 24px;
+  --radius-modal: 26px;
+  --radius-pill: 999px;
+
+  /* Motion */
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+  --dur-fast: 120ms;
+  --dur-base: 200ms;
+  --dur-slow: 320ms;
+
+  /* Type */
+  --font: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  /* Layout */
+  --content-max: 1240px;
+  --content-narrow: 980px;
+}

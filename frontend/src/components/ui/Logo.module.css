@@ -1,0 +1,30 @@
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: var(--cp-primary);
+  color: #fff;
+}
+
+.mark.inverted {
+  background: #fff;
+  color: var(--cp-primary);
+}
+
+.wordmark {
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--cp-text);
+  white-space: nowrap;
+}
+
+.accent {
+  color: var(--cp-primary);
+}

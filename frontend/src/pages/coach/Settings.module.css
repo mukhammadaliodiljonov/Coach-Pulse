@@ -1,0 +1,101 @@
+.teamFields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: 14px;
+}
+
+.label {
+  font-size: 13px;
+}
+
+.protocol {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 16px;
+  border-radius: 16px;
+  background: var(--cp-fill);
+}
+
+.protocolText {
+  flex: 1;
+  min-width: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.protocolName {
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.protocolMeta {
+  font-size: 12px;
+  color: var(--cp-text-secondary);
+}
+
+.subhead {
+  padding-top: 6px;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.toggleRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--cp-divider);
+}
+
+.toggleText {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.toggleLabel {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.toggleSub {
+  font-size: 12px;
+  color: var(--cp-text-muted);
+}
+
+.account {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.accountText {
+  flex: 1;
+  min-width: 180px;
+  display: flex;
+  flex-direction: column;
+}
+
+.accountName {
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.accountMeta {
+  font-size: 13px;
+  color: var(--cp-text-secondary);
+}
+
+.save {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.fileInput {
+  display: none;
+}

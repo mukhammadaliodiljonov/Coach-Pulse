@@ -1,0 +1,71 @@
+.bar {
+  max-width: var(--content-max);
+  margin: 0 auto 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mobileLogo {
+  display: none;
+}
+
+.teamChip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 14px;
+  border-radius: var(--radius-pill);
+  background: var(--cp-surface);
+  box-shadow: var(--shadow-hairline);
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.teamDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--cp-primary);
+}
+
+.spacer {
+  flex: 1;
+}
+
+.ask {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 16px;
+  background: var(--cp-surface);
+  color: var(--cp-primary);
+  box-shadow: var(--shadow-sm);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.ask:hover {
+  background: var(--cp-fill);
+}
+
+@media (max-width: 759px) {
+  .mobileLogo {
+    display: flex;
+    gap: 8px;
+  }
+
+  .teamChip,
+  .askLabel {
+    display: none;
+  }
+
+  .ask {
+    padding: 0 13px;
+  }
+}

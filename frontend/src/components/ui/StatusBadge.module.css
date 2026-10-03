@@ -1,0 +1,66 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  gap: 7px;
+  border-radius: var(--radius-pill);
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.badge[data-status='high'] {
+  background: var(--cp-high-bg);
+  color: var(--cp-high-fg);
+}
+
+.badge[data-status='review'] {
+  background: var(--cp-review-bg);
+  color: var(--cp-review-fg);
+}
+
+.badge[data-status='normal'] {
+  background: var(--cp-normal-bg);
+  color: var(--cp-normal-fg);
+}
+
+.badge.iconOnly {
+  background: transparent;
+}
+
+.icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Shape differs by status so it never relies on color alone. */
+.badge[data-status='high'] .icon {
+  border-radius: 50%;
+  background: var(--cp-high-solid);
+  color: #fff;
+}
+
+.badge[data-status='review'] .icon {
+  background: var(--cp-review-solid);
+  color: var(--cp-review-glyph);
+  transform: rotate(45deg);
+}
+
+.badge[data-status='normal'] .icon {
+  border-radius: 50%;
+  background: var(--cp-normal-solid);
+  color: #fff;
+}
+
+.glyph {
+  display: block;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.badge[data-status='review'] .glyph {
+  transform: rotate(-45deg);
+}

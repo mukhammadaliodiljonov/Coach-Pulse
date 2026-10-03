@@ -1,0 +1,86 @@
+.insights {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  gap: 12px;
+}
+
+.insight {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 18px 20px;
+  border-radius: var(--radius-card-sm);
+  background: var(--cp-surface);
+  box-shadow: var(--shadow-card);
+}
+
+.tag {
+  align-self: flex-start;
+  display: flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: var(--radius-pill);
+  background: var(--cp-primary-container);
+  color: var(--cp-on-primary-container);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.insightText {
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.4;
+  text-wrap: pretty;
+}
+
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+  gap: 16px;
+}
+
+.metric {
+  padding: 20px;
+  gap: 12px;
+}
+
+.metricHead {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.metricText {
+  flex: 1;
+}
+
+.metricTitle {
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.metricValue {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.unit {
+  font-size: 13px;
+  color: var(--cp-text-muted);
+}
+
+.change {
+  height: 26px;
+  padding: 0 10px;
+  font-size: 12px;
+}
+
+.axis {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--cp-text-muted);
+}

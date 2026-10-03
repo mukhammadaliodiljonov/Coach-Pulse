@@ -1,0 +1,43 @@
+.shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+.main {
+  flex: 1;
+  min-width: 0;
+  padding: 28px 36px 48px;
+}
+
+.main:focus {
+  outline: none;
+}
+
+@media (max-width: 1099px) {
+  .main {
+    padding: 24px;
+  }
+}
+
+/* Leave room for the floating bottom nav. */
+@media (max-width: 759px) {
+  .main {
+    padding: 16px 16px 112px;
+  }
+}
+
+.skip {
+  position: absolute;
+  left: 16px;
+  top: -60px;
+  z-index: 70;
+  padding: 10px 16px;
+  border-radius: 12px;
+  background: var(--cp-dark);
+  color: #fff;
+}
+
+.skip:focus {
+  top: 16px;
+  color: #fff;
+}
