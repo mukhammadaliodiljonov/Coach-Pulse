@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -33,6 +34,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 	@ExceptionHandler(AuthenticationFailedException.class)
 	public ProblemDetail handleAuthenticationFailed(AuthenticationFailedException ex) {
 		return problem(HttpStatus.UNAUTHORIZED, ex.getMessage());
+	}
+
+	// Method security throws from inside the controller, so without this the catch-all below would return 500
+	@ExceptionHandler(AccessDeniedException.class)
+	public ProblemDetail handleAccessDenied(AccessDeniedException ex) {
+		return problem(HttpStatus.FORBIDDEN, "You do not have permission to perform this action");
 	}
 
 	@ExceptionHandler(ResourceNotFoundException.class)
