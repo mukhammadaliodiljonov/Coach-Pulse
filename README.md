@@ -28,6 +28,23 @@ Controllers read the verified identity from the authentication context, for
 example `@AuthenticationPrincipal Jwt jwt` and `jwt.getSubject()` for the user
 ID. Never take the user ID or role from request bodies, headers, or parameters.
 
+## Role authorization
+
+Role permissions are enforced on the server with method security. Annotate a
+controller method with the roles allowed to call it:
+
+```java
+@PreAuthorize("hasRole('COACH')")
+@PreAuthorize("hasAnyRole('COACH', 'ADMIN')")
+```
+
+Roles come only from the verified JWT. There is no role hierarchy, so `ADMIN`
+does not automatically get `COACH` or `ATHLETE` permissions; list every role an
+endpoint allows. An authenticated user without an allowed role gets `403` in the
+standard Problem Details format; a request with no valid token still gets `401`.
+Hiding pages or buttons in the frontend is only for user experience. Every
+restricted endpoint must have its own role check on the server.
+
 ## User roles
 
 CoachPulse roles are defined in `UserRole`: `ATHLETE`, `COACH`, and `ADMIN`.

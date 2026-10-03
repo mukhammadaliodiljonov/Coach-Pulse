@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -38,8 +39,14 @@ import org.springframework.security.web.servlet.util.matcher.PathPatternRequestM
 import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
+/**
+ * Authentication and authorization for the API. Role checks are enforced server-side with
+ * {@code @PreAuthorize("hasRole('COACH')")} (or {@code hasAnyRole(...)}) on controller methods,
+ * using the {@code ROLE_*} authorities derived from the verified JWT.
+ */
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class JwtSecurityConfiguration {
 
     /** Endpoints reachable without a bearer token. Every other route requires a verified JWT. */
