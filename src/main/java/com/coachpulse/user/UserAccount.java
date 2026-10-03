@@ -98,4 +98,8 @@ public class UserAccount {
     public OffsetDateTime getCreatedAt() {
         return createdAt;
     }
+
+    public OffsetDateTime getUpdatedAt() {
+        return updatedAt;
+    }
 }
