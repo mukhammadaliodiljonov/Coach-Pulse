@@ -21,8 +21,8 @@ export interface Toast {
   message: string
 }
 
-/** "ready" once the first load succeeds; the coach pages only render then. */
-export type LoadStatus = 'loading' | 'ready' | 'error'
+/** "ready" once the first load succeeds; the coach pages only render then. "no-team" until the coach creates one. */
+export type LoadStatus = 'loading' | 'ready' | 'error' | 'no-team'
 
 export interface CoachStore {
   dataSource: DataSourceKind

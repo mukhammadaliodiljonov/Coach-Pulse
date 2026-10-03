@@ -100,6 +100,14 @@ export interface TeamCoachDto {
   memberRole: Exclude<MemberRole, 'ATHLETE'>
 }
 
+/** POST /api/teams — the caller becomes the head coach. Responds with the TeamDto. */
+export interface CreateTeamRequest {
+  name: string
+  sport: string
+  ageGroup: string | null
+  trainingFrequency: string | null
+}
+
 /** GET /api/teams/{teamId} */
 export interface TeamDto {
   id: Uuid

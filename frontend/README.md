@@ -23,10 +23,10 @@ The app reads everything through a data source (`src/sources/`):
 - **Sample data** — set `VITE_DATA_SOURCE=mock` (that's what `npm run dev:mock` does, via `.env.mock`): a fictional
   team from the design handoff, kept in memory. Actions and check-ins you save last until you reload.
 
-The backend doesn't have these endpoints yet: the contract the app expects is in
-[`docs/api-contract.md`](../docs/api-contract.md), with the TypeScript shapes in `src/api/types.ts`. In backend mode
+The contract the app expects is in [`docs/api-contract.md`](../docs/api-contract.md), with the TypeScript shapes
+in `src/api/types.ts`; the backend implements the coach endpoints so far, not the athlete ones. In backend mode
 the app shows real loading, error and offline states, refreshes every minute, and marks the screens whose endpoints
-come later (sessions, trends, reports, settings, team setup, sign-in) as sample data.
+come later (sessions, trends, reports, settings) as sample data.
 
 ### Sign-in and protected routes
 
@@ -40,7 +40,8 @@ can't sign up yet: the backend has no athlete registration or team-code join. Th
 - **API requests** send it as `Authorization: Bearer <token>`, never in URLs or bodies.
 - **Routes**: coach pages need a `COACH` or `ADMIN` account and athlete pages an `ATHLETE` one. Signed-out users go
   to the matching sign-in page and come back afterwards; users outside a page's role go to their own home.
-  `/login`, `/signup`, `/setup`, `/athlete/login` and `/athlete/join` are public.
+  `/login`, `/signup`, `/athlete/login` and `/athlete/join` are public; `/setup` needs a coach sign-in. A coach
+  without a team sees “Create your team”, and the setup wizard creates it (`POST /api/teams`).
 - The role is read from the token without verifying it, which is fine for choosing screens: **the backend verifies
   the token and enforces roles on every request.** Hiding a page here is not a security boundary.
 

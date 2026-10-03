@@ -38,7 +38,8 @@ export const router = createBrowserRouter([
           { path: 'signup', element: <SignUp /> },
         ],
       },
-      { path: 'setup', element: <TeamSetup /> },
+      // Creating a team needs a coach sign-in with the backend (open in the sample-data demo).
+      { element: <RequireArea area="coach" />, children: [{ path: 'setup', element: <TeamSetup /> }] },
       {
         path: 'athlete',
         element: <AthleteLayout />,

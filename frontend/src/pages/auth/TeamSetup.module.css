@@ -281,3 +281,13 @@
   padding-top: 8px;
   border-top: 1px solid var(--cp-divider);
 }
+
+.error {
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--cp-high-bg);
+  color: var(--cp-high-fg);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.45;
+}

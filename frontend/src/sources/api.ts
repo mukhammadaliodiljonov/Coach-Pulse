@@ -15,7 +15,7 @@ import {
 } from '../api/adapters'
 import { api } from '../api/endpoints'
 import { sortByAttention } from '../domain/signals'
-import type { AthleteSource, CoachSource } from './types'
+import { NoTeamError, type AthleteSource, type CoachSource } from './types'
 
 // The Spring Boot backend, through the endpoints in docs/api-contract.md.
 
@@ -24,7 +24,7 @@ export function apiCoachSource(): CoachSource {
     async load(signal) {
       const me = await api.getMe(signal)
       const membership = me.teams.find((t) => t.memberRole !== 'ATHLETE')
-      if (!membership) throw new Error('This account isn’t a coach on any team yet.')
+      if (!membership) throw new NoTeamError()
       const teamId = membership.teamId
 
       const [team, day, pastAlerts, activity] = await Promise.all([

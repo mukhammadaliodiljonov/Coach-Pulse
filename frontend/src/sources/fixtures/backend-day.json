@@ -1,0 +1,103 @@
+{
+    "teamId": "47bc8ea2-6503-493b-be44-19a355eb5682",
+    "date": "2026-10-04",
+    "athletes": [
+        {
+            "athleteId": "22222222-2222-2222-2222-222222222222",
+            "firstName": "Alex",
+            "lastName": "Johnson",
+            "position": null,
+            "dateOfBirth": "2010-03-14",
+            "morningCheckin": {
+                "id": "ea1aab0f-e382-4a1e-bd08-79799fefdd43",
+                "createdAt": "2026-10-03T23:49:28.570481Z",
+                "sleepQuality": 3,
+                "fatigue": 5,
+                "muscleSoreness": 4,
+                "overallWellness": 2,
+                "symptoms": [],
+                "notes": null
+            },
+            "latestWorkout": {
+                "id": "638c9660-7250-4900-b557-2755cad2580c",
+                "createdAt": "2026-10-03T23:48:28.571566Z",
+                "rpe": 10,
+                "durationMinutes": 78,
+                "tiredness": null,
+                "muscleSoreness": null,
+                "preWeightKg": null,
+                "postWeightKg": null,
+                "symptoms": [
+                    "HEADACHE",
+                    "DIZZINESS"
+                ]
+            },
+            "baseline": null,
+            "loadHistory": [
+                {
+                    "date": "2026-09-21",
+                    "loadAu": 0
+                },
+                {
+                    "date": "2026-09-22",
+                    "loadAu": 0
+                },
+                {
+                    "date": "2026-09-23",
+                    "loadAu": 0
+                },
+                {
+                    "date": "2026-09-24",
+                    "loadAu": 0
+                },
+                {
+                    "date": "2026-09-25",
+                    "loadAu": 0
+                },
+                {
+                    "date": "2026-09-26",
+                    "loadAu": 0
+                },
+                {
+                    "date": "2026-09-27",
+                    "loadAu": 0
+                },
+                {
+                    "date": "2026-09-28",
+                    "loadAu": 0
+                },
+                {
+                    "date": "2026-09-29",
+                    "loadAu": 0
+                },
+                {
+                    "date": "2026-09-30",
+                    "loadAu": 0
+                },
+                {
+                    "date": "2026-10-01",
+                    "loadAu": 480
+                },
+                {
+                    "date": "2026-10-02",
+                    "loadAu": 0
+                },
+                {
+                    "date": "2026-10-03",
+                    "loadAu": 0
+                },
+                {
+                    "date": "2026-10-04",
+                    "loadAu": 780
+                }
+            ],
+            "assessment": null,
+            "alert": {
+                "id": "9f1a7055-725a-46e3-8a25-38cf6dd6ae49",
+                "status": "OPEN",
+                "createdAt": "2026-10-03T23:50:28.57323Z",
+                "latestAction": null
+            }
+        }
+    ]
+}

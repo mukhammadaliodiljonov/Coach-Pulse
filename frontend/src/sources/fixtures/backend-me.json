@@ -1,0 +1,18 @@
+{
+    "user": {
+        "id": "07c1fe7a-3460-4baa-8e4d-a171dfa011cd",
+        "email": "sam@club.org",
+        "firstName": "Sam",
+        "lastName": "Rivera",
+        "role": "COACH"
+    },
+    "athleteId": null,
+    "teams": [
+        {
+            "teamId": "47bc8ea2-6503-493b-be44-19a355eb5682",
+            "name": "Northside U17",
+            "sport": "Football",
+            "memberRole": "HEAD_COACH"
+        }
+    ]
+}

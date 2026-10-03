@@ -1,0 +1,12 @@
+[
+    {
+        "id": "5b17c489-3747-4268-b7e3-bddd18f8b5a2",
+        "status": "RESOLVED",
+        "createdAt": "2026-10-01T23:50:28.57323Z",
+        "latestAction": null,
+        "athleteId": "22222222-2222-2222-2222-222222222222",
+        "athleteName": "Alex Johnson",
+        "riskStatus": "YELLOW",
+        "reasons": []
+    }
+]
