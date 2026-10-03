@@ -1,13 +1,13 @@
-package com.example.demo;
+package com.coachpulse;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class DemoApplication {
+public class CoachPulseApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(DemoApplication.class, args);
+		SpringApplication.run(CoachPulseApplication.class, args);
 	}
 
 }
