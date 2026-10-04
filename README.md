@@ -298,8 +298,8 @@ On startup the app runs any pending Liquibase migrations against the database.
 
 One CloudFront distribution serves both: the web app from a private S3 bucket,
 and every `/api/*` request from the Beanstalk API. Browsers get HTTPS, the web
-app and the API share one origin (so no CORS setup and no `VITE_API_BASE_URL`),
-and Beanstalk only needs plain HTTP.
+app and the API share one origin (so no CORS setup), and Beanstalk only needs
+plain HTTP.
 
 ```
 https://<distribution>.cloudfront.net/            → S3 bucket (web app)
@@ -313,8 +313,11 @@ cd frontend
 npm run build
 ```
 
-Leave `VITE_API_BASE_URL` unset: the app calls `/api` on its own address. This
-creates `frontend/dist` (`index.html`, `favicon.svg` and `assets/`).
+The build reads `frontend/.env.production`, which sets
+`VITE_API_BASE_URL=https://d226wgv8g9m5g7.cloudfront.net/api`: the same address
+as the web app, so requests stay same-origin. Change it there if the
+distribution changes (local `npm run dev` ignores it and keeps using `/api`).
+This creates `frontend/dist` (`index.html`, `favicon.svg` and `assets/`).
 
 ### 2. Put it in a private S3 bucket
 
