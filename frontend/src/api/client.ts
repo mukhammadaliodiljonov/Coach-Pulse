@@ -48,7 +48,8 @@ export async function apiRequest<T>(path: string, { method = 'GET', body, signal
     response = await fetch(`${BASE_URL}${path}`, {
       method,
       signal,
-      credentials: 'include',
+      // Auth is the bearer token, so no cookies: that keeps cross-origin requests to the API simple.
+      credentials: 'omit',
       headers: {
         Accept: 'application/json',
         ...(body === undefined ? {} : { 'Content-Type': 'application/json' }),

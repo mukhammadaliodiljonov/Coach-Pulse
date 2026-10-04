@@ -1,6 +1,8 @@
 package com.coachpulse.security;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.List;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
@@ -38,6 +40,9 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 /**
  * Authentication and authorization for the API. Role checks are enforced server-side with
@@ -55,7 +60,8 @@ public class JwtSecurityConfiguration {
             PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.POST, "/api/auth/login"),
             PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.POST, "/api/auth/logout"),
             PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.GET, "/api/auth/join/*"),
-            PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.POST, "/api/auth/join"));
+            PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.POST, "/api/auth/join"),
+            PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.GET, "/api/health"));
 
     @Bean
     SecretKey jwtSecretKey(@Value("${app.security.jwt.secret}") String secret) {
@@ -108,9 +114,37 @@ public class JwtSecurityConfiguration {
         return Pbkdf2PasswordEncoder.defaultsForSpringSecurity_v5_8();
     }
 
+    /**
+     * Lets a web app on another origin (e.g. the frontend on S3/CloudFront) call the API. Origins come from
+     * {@code app.cors.allowed-origins} (env CORS_ALLOWED_ORIGINS), comma-separated and exact, e.g.
+     * {@code https://app.example.com}. Left empty, no cross-origin requests are allowed. Authentication is the
+     * bearer token, so no cookies are allowed across origins.
+     */
+    @Bean
+    CorsConfigurationSource corsConfigurationSource(@Value("${app.cors.allowed-origins:}") String allowedOrigins) {
+        List<String> origins = Arrays.stream(allowedOrigins.split(","))
+                .map(String::trim)
+                .filter(origin -> !origin.isEmpty())
+                .toList();
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        if (origins.isEmpty()) {
+            return source;
+        }
+        CorsConfiguration cors = new CorsConfiguration();
+        cors.setAllowedOrigins(origins);
+        cors.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        cors.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept"));
+        cors.setExposedHeaders(List.of("WWW-Authenticate"));
+        cors.setAllowCredentials(false);
+        cors.setMaxAge(3600L);
+        source.registerCorsConfiguration("/api/**", cors);
+        return source;
+    }
+
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
+                .cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
