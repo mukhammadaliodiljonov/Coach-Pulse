@@ -1,39 +1,25 @@
 import { useEffect, type ReactNode } from 'react'
-import { Link, Navigate, NavLink, Outlet } from 'react-router'
+import { Navigate, NavLink, Outlet } from 'react-router'
 import { useAuth } from '../../auth/useAuth'
 import { Button } from '../../components/ui/Button'
 import { Icon } from '../../components/ui/Icon'
-import type { IconName } from '../../components/ui/iconPaths'
 import { cx } from '../../lib/cx'
 import { paths } from '../../navigation/paths'
 import { useAthleteStore } from '../../state/athleteStore'
 import styles from './athlete.module.css'
+import { AthleteSidebar } from './AthleteSidebar'
+import { ATHLETE_TABS } from './athleteTabs'
 
-/** The athlete app inside a phone frame on wide screens; full screen on phones. */
+/** The athlete app as a web page; signed-in screens add the sidebar or bottom nav (AthleteTabs). */
 export function AthleteLayout() {
-  const { required } = useAuth()
   return (
     <div className={styles.page}>
-      <div className={styles.frameBar}>
-        <span>Athlete app · mobile</span>
-        {/* Switching between the apps is a sample-data demo; real accounts have one role. */}
-        {!required && <Link to={paths.overview}>Back to coach view</Link>}
-      </div>
-      <div className={styles.phone}>
-        <Outlet />
-      </div>
+      <Outlet />
     </div>
   )
 }
 
-const TABS: { to: string; label: string; icon: IconName; end?: boolean }[] = [
-  { to: paths.athleteApp.home, label: 'Home', icon: 'home', end: true },
-  { to: paths.athleteApp.history, label: 'History', icon: 'stats' },
-  { to: paths.athleteApp.schedule, label: 'Schedule', icon: 'calendar' },
-  { to: paths.athleteApp.profile, label: 'Profile', icon: 'user' },
-]
-
-/** Shown inside the phone while signing in. */
+/** Shown while the athlete's data loads. */
 function Signing() {
   return (
     <div className={styles.scroll}>
@@ -85,32 +71,44 @@ function AthleteReady({ children }: { children: ReactNode }) {
   return <Signing />
 }
 
-/** Signed-in screens with the floating bottom nav. */
+/** Signed-in screens: the sidebar on wider screens, the floating bottom nav on phones. */
 export function AthleteTabs() {
   return (
     <AthleteReady>
-      <div className={styles.scroll}>
-        <Outlet />
+      <div className={styles.shell}>
+        <AthleteSidebar />
+        <main className={styles.main}>
+          <div className={styles.scroll}>
+            <Outlet />
+          </div>
+          <nav className={styles.nav} aria-label="Athlete navigation">
+            {ATHLETE_TABS.map((tab) => (
+              <NavLink
+                key={tab.to}
+                to={tab.to}
+                end={tab.end}
+                className={({ isActive }) => cx(styles.navItem, isActive && styles.active)}
+              >
+                <span className={styles.navIcon}>
+                  <Icon name={tab.icon} size={19} />
+                </span>
+                {tab.label}
+              </NavLink>
+            ))}
+          </nav>
+        </main>
       </div>
-      <nav className={styles.nav} aria-label="Athlete navigation">
-        {TABS.map((tab) => (
-          <NavLink key={tab.to} to={tab.to} end={tab.end} className={({ isActive }) => cx(styles.navItem, isActive && styles.active)}>
-            <span className={styles.navIcon}>
-              <Icon name={tab.icon} size={19} />
-            </span>
-            {tab.label}
-          </NavLink>
-        ))}
-      </nav>
     </AthleteReady>
   )
 }
 
-/** Check-in flows hide the nav but still need a signed-in athlete. */
+/** Check-in flows hide the navigation but still need a signed-in athlete. */
 export function RequireAthlete() {
   return (
     <AthleteReady>
-      <Outlet />
+      <div className={styles.flow}>
+        <Outlet />
+      </div>
     </AthleteReady>
   )
 }

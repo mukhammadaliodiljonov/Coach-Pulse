@@ -1,6 +1,6 @@
 # CoachPulse — web front end
 
-Coach web app (desktop-first, responsive) and athlete check-in app (mobile-first) for CoachPulse, built from the
+Coach web app and athlete check-in app for CoachPulse (both responsive web apps), built from the
 design handoff (`design_handoff_coachpulse`). React 19 + TypeScript + Vite, React Router 8, CSS Modules.
 
 ## Commands
@@ -70,7 +70,8 @@ With `npm run dev:mock`, append `?scenario=` to the first URL you open:
 | `/training` `/trends` `/reports` `/settings` | | `/athlete/history` `/schedule` `/profile` | |
 | `/login` `/signup` `/setup` | Sign in, create account, team setup | | |
 
-The athlete app renders in a 390×780 phone frame on wide screens and full screen below 520px.
+Both apps use the same shell: a sidebar on wide screens (an icon rail from 760–1099px) and a floating bottom nav
+below 760px. Check-in flows hide the navigation. Each sign-in page links to the other app's sign-in page.
 
 ## Structure
 

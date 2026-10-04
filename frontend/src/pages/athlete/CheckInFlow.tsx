@@ -83,7 +83,9 @@ function CheckIn({ flow }: { flow: Flow }) {
 
   // Each step starts at the top, with focus on its question.
   useEffect(() => {
+    // Each step starts at the top: of its column if that scrolls, and of the page.
     scrollRef.current?.scrollTo({ top: 0 })
+    window.scrollTo({ top: 0 })
     headingRef.current?.focus()
   }, [index])
 
