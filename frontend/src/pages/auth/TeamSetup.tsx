@@ -102,9 +102,7 @@ export function TeamSetup() {
       <div className={styles.card}>
         {!backend && <SampleDataNote>Team setup isn’t connected to the server yet, so nothing here is saved.</SampleDataNote>}
         {backend && step === 1 && (
-          <SampleDataNote>
-            Athletes can’t join with the code or be added here yet; that comes with athlete sign-up.
-          </SampleDataNote>
+          <SampleDataNote>Athletes join with the code at /athlete/join. Adding them here isn’t connected yet.</SampleDataNote>
         )}
         {step === 0 && (
           <>

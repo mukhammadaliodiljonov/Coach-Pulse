@@ -69,6 +69,18 @@ export interface RegistrationResponse {
   createdAt: IsoDateTime
 }
 
+/** GET /api/auth/join/{joinCode} — public: what an athlete sees before joining. */
+export interface TeamPreviewDto {
+  name: string
+  sport: string
+  headCoach: { firstName: string; lastName: string } | null
+}
+
+/** POST /api/auth/join — creates an ATHLETE account on the team with this code. Responds like registration. */
+export interface JoinTeamRequest extends RegistrationRequest {
+  joinCode: string
+}
+
 /** POST /api/auth/login */
 export interface LoginRequest {
   email: string

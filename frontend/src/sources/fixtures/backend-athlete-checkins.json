@@ -1,0 +1,59 @@
+[
+    {
+        "date": "2026-10-04",
+        "morning": {
+            "id": "41eeac5e-440a-4852-ad78-f89843d36f54",
+            "createdAt": "2026-10-04T00:15:58.25411Z",
+            "sleepQuality": 2,
+            "fatigue": 4,
+            "muscleSoreness": 3,
+            "overallWellness": 2,
+            "symptoms": [
+                "NAUSEA",
+                "CONFUSION"
+            ],
+            "notes": null
+        },
+        "workout": {
+            "id": "9d2f049f-3573-473a-a33a-915bc12f7754",
+            "createdAt": "2026-10-04T00:15:58.328169Z",
+            "rpe": 7,
+            "durationMinutes": 60,
+            "tiredness": 4,
+            "muscleSoreness": 3,
+            "preWeightKg": 64.2,
+            "postWeightKg": 63.4,
+            "symptoms": []
+        }
+    },
+    {
+        "date": "2026-10-03",
+        "morning": null,
+        "workout": null
+    },
+    {
+        "date": "2026-10-02",
+        "morning": null,
+        "workout": null
+    },
+    {
+        "date": "2026-10-01",
+        "morning": null,
+        "workout": null
+    },
+    {
+        "date": "2026-09-30",
+        "morning": null,
+        "workout": null
+    },
+    {
+        "date": "2026-09-29",
+        "morning": null,
+        "workout": null
+    },
+    {
+        "date": "2026-09-28",
+        "morning": null,
+        "workout": null
+    }
+]

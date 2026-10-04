@@ -1,0 +1,18 @@
+{
+    "user": {
+        "id": "1d813fbb-a7c8-4dde-bc44-745785275a81",
+        "email": "emma@club.org",
+        "firstName": "Emma",
+        "lastName": "Wilson",
+        "role": "ATHLETE"
+    },
+    "athleteId": "886caf91-be67-4c6d-bbaa-57f121ff6170",
+    "teams": [
+        {
+            "teamId": "47bc8ea2-6503-493b-be44-19a355eb5682",
+            "name": "Northside U17",
+            "sport": "Football",
+            "memberRole": "ATHLETE"
+        }
+    ]
+}

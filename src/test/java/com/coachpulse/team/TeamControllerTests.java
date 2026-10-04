@@ -73,6 +73,18 @@ class TeamControllerTests {
 	}
 
 	@Test
+	void athletesCanSeeTheirTeamDetails() throws Exception {
+		UUID userId = UUID.randomUUID();
+		UUID teamId = UUID.randomUUID();
+		when(teamService.get(teamId, userId)).thenReturn(new TeamResponse(teamId, "Northside U17", "Football", "U17",
+				"ABC-DEFG", List.of()));
+
+		mockMvc.perform(get("/api/teams/" + teamId).header(HttpHeaders.AUTHORIZATION, bearer(userId, UserRole.ATHLETE)))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.name").value("Northside U17"));
+	}
+
+	@Test
 	void invalidTeamIsRejected() throws Exception {
 		mockMvc.perform(post("/api/teams").header(HttpHeaders.AUTHORIZATION, bearer(UUID.randomUUID(), UserRole.COACH))
 				.contentType(MediaType.APPLICATION_JSON).content("{\"name\":\"\",\"sport\":\"\"}"))

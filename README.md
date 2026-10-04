@@ -90,3 +90,17 @@ The dashboard reads `GET /api/teams/{teamId}`, `/athletes/today`,
 These answer `404` unless the caller coaches the team, so team ids cannot be
 probed. Formats are in `docs/api-contract.md`. "Today" is the calendar day in
 the server's time zone.
+
+## Athletes and check-ins
+
+Athletes cannot self-register. They join with their coach's team code:
+`GET /api/auth/join/{code}` (public) shows the team, and `POST /api/auth/join`
+(public) creates the `ATHLETE` account, its athlete profile, and the team
+membership in one transaction. The role is never taken from the request.
+
+`POST /api/athletes/{athleteId}/morning-checkins` and `/workout-checkins` are
+for the athlete only. `GET /api/athletes/{athleteId}/today` and
+`/checkins?days=` (up to 60) are for the athlete and their team's coaches;
+anyone else gets `404`. `symptoms` is required on both check-ins, so a missing
+answer is never stored as "no symptoms". Check-ins are stored only; the
+server-side signal engine and alerts come later.

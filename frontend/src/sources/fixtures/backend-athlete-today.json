@@ -1,0 +1,16 @@
+{
+    "morningDone": true,
+    "workoutDone": true,
+    "lastSevenDays": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true
+    ],
+    "coachFollowUp": {
+        "coachName": "Coach Rivera"
+    }
+}

@@ -53,7 +53,9 @@ public class JwtSecurityConfiguration {
     static final RequestMatcher PUBLIC_ENDPOINTS = new OrRequestMatcher(
             PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.POST, "/api/auth/register"),
             PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.POST, "/api/auth/login"),
-            PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.POST, "/api/auth/logout"));
+            PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.POST, "/api/auth/logout"),
+            PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.GET, "/api/auth/join/*"),
+            PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.POST, "/api/auth/join"));
 
     @Bean
     SecretKey jwtSecretKey(@Value("${app.security.jwt.secret}") String secret) {

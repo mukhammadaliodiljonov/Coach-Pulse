@@ -1,0 +1,15 @@
+{
+    "id": "47bc8ea2-6503-493b-be44-19a355eb5682",
+    "name": "Northside U17",
+    "sport": "Football",
+    "ageGroup": "U17",
+    "joinCode": "D5C-F29T",
+    "coaches": [
+        {
+            "userId": "07c1fe7a-3460-4baa-8e4d-a171dfa011cd",
+            "firstName": "Sam",
+            "lastName": "Rivera",
+            "memberRole": "HEAD_COACH"
+        }
+    ]
+}

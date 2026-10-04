@@ -44,9 +44,10 @@ public class TeamService {
         return toResponse(team);
     }
 
+    /** The team and its coaches, for any member: athletes see who their coaches are. */
     @Transactional(readOnly = true)
     public TeamResponse get(UUID teamId, UUID userId) {
-        teamAccess.requireCoach(teamId, userId);
+        teamAccess.requireMember(teamId, userId);
         Team team = teams.findById(teamId).orElseThrow(() -> new ResourceNotFoundException("Team", teamId));
         return toResponse(team);
     }

@@ -1,10 +1,12 @@
 package com.coachpulse.team;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
+
+import com.coachpulse.checkin.MorningCheckin;
+import com.coachpulse.checkin.WorkoutCheckin;
 
 /** {@code GET /api/teams/{teamId}/athletes/today}, as described in docs/api-contract.md. */
 public record TeamDayResponse(UUID teamId, LocalDate date, List<AthleteDay> athletes) {
@@ -26,31 +28,6 @@ public record TeamDayResponse(UUID teamId, LocalDate date, List<AthleteDay> athl
             List<DailyLoad> loadHistory,
             Object assessment,
             AlertSummary alert) {
-    }
-
-    /** The table has no symptom or notes columns beyond these yet, so {@code symptoms} is always empty. */
-    public record MorningCheckin(
-            UUID id,
-            OffsetDateTime createdAt,
-            int sleepQuality,
-            int fatigue,
-            int muscleSoreness,
-            int overallWellness,
-            List<String> symptoms,
-            String notes) {
-    }
-
-    /** {@code tiredness} and {@code muscleSoreness} are null until workout_checkins has the columns. */
-    public record WorkoutCheckin(
-            UUID id,
-            OffsetDateTime createdAt,
-            int rpe,
-            int durationMinutes,
-            Integer tiredness,
-            Integer muscleSoreness,
-            BigDecimal preWeightKg,
-            BigDecimal postWeightKg,
-            List<String> symptoms) {
     }
 
     public record DailyLoad(LocalDate date, long loadAu) {

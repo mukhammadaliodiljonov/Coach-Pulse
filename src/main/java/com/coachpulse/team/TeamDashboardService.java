@@ -1,7 +1,6 @@
 package com.coachpulse.team;
 
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
@@ -15,12 +14,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import com.coachpulse.checkin.CheckinRows;
+import com.coachpulse.checkin.MorningCheckin;
+import com.coachpulse.checkin.WorkoutCheckin;
 import com.coachpulse.exception.BadRequestException;
 import com.coachpulse.team.TeamDayResponse.AlertSummary;
 import com.coachpulse.team.TeamDayResponse.AthleteDay;
 import com.coachpulse.team.TeamDayResponse.DailyLoad;
-import com.coachpulse.team.TeamDayResponse.MorningCheckin;
-import com.coachpulse.team.TeamDayResponse.WorkoutCheckin;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -82,45 +82,19 @@ public class TeamDashboardService {
         List<UUID> ids = athletes.stream().map(AthleteRow::athleteId).toList();
 
         Map<UUID, MorningCheckin> morning = new HashMap<>();
-        jdbc.sql("""
-                        SELECT id, athlete_id, created_at, sleep_quality, fatigue, muscle_soreness, overall_wellness, notes
-                        FROM morning_checkins
-                        WHERE athlete_id IN (:ids) AND created_at >= :from AND created_at < :to
-                        ORDER BY created_at DESC
-                        """)
+        jdbc.sql("SELECT " + CheckinRows.MORNING_COLUMNS + " FROM morning_checkins"
+                        + " WHERE athlete_id IN (:ids) AND created_at >= :from AND created_at < :to ORDER BY created_at DESC")
                 .param("ids", ids).param("from", dayStart).param("to", dayEnd)
                 .query((ResultSet rs) -> {
-                    morning.putIfAbsent(rs.getObject("athlete_id", UUID.class), new MorningCheckin(
-                            rs.getObject("id", UUID.class),
-                            rs.getObject("created_at", OffsetDateTime.class),
-                            rs.getInt("sleep_quality"),
-                            rs.getInt("fatigue"),
-                            rs.getInt("muscle_soreness"),
-                            rs.getInt("overall_wellness"),
-                            List.of(),
-                            rs.getString("notes")));
+                    morning.putIfAbsent(rs.getObject("athlete_id", UUID.class), CheckinRows.morning(rs));
                 });
 
         Map<UUID, WorkoutCheckin> latestWorkout = new HashMap<>();
-        jdbc.sql("""
-                        SELECT DISTINCT ON (athlete_id) id, athlete_id, created_at, rpe, duration_minutes,
-                               pre_weight_kg, post_weight_kg, headache, dizziness, light_sensitivity
-                        FROM workout_checkins
-                        WHERE athlete_id IN (:ids)
-                        ORDER BY athlete_id, created_at DESC
-                        """)
+        jdbc.sql("SELECT DISTINCT ON (athlete_id) " + CheckinRows.WORKOUT_COLUMNS + " FROM workout_checkins"
+                        + " WHERE athlete_id IN (:ids) ORDER BY athlete_id, created_at DESC")
                 .param("ids", ids)
                 .query((ResultSet rs) -> {
-                    latestWorkout.put(rs.getObject("athlete_id", UUID.class), new WorkoutCheckin(
-                            rs.getObject("id", UUID.class),
-                            rs.getObject("created_at", OffsetDateTime.class),
-                            rs.getInt("rpe"),
-                            rs.getInt("duration_minutes"),
-                            null,
-                            null,
-                            rs.getBigDecimal("pre_weight_kg"),
-                            rs.getBigDecimal("post_weight_kg"),
-                            workoutSymptoms(rs)));
+                    latestWorkout.put(rs.getObject("athlete_id", UUID.class), CheckinRows.workout(rs));
                 });
 
         Map<UUID, Map<LocalDate, Long>> loads = new HashMap<>();
@@ -280,20 +254,6 @@ public class TeamDashboardService {
         }
         loads.forEach((date, load) -> byDay.computeIfPresent(date, (d, zero) -> load));
         return byDay.entrySet().stream().map(e -> new DailyLoad(e.getKey(), e.getValue())).toList();
-    }
-
-    private static List<String> workoutSymptoms(ResultSet rs) throws SQLException {
-        List<String> symptoms = new ArrayList<>();
-        if (rs.getBoolean("headache")) {
-            symptoms.add("HEADACHE");
-        }
-        if (rs.getBoolean("dizziness")) {
-            symptoms.add("DIZZINESS");
-        }
-        if (rs.getBoolean("light_sensitivity")) {
-            symptoms.add("LIGHT_SENSITIVITY");
-        }
-        return symptoms;
     }
 
     /** reason_codes defaults to '{}'; the contract wants a list, so anything but an array becomes []. */
