@@ -287,122 +287,42 @@ JAR directly; no WAR is needed.
    | `SERVER_PORT` | `5000` (the port Beanstalk's nginx forwards to) |
    | `DB_PASSWORD` | the Supabase database password |
    | `JWT_SECRET` | a random value of at least 32 bytes (`openssl rand -base64 32`) |
-   | `CORS_ALLOWED_ORIGINS` | only if the web app is on another address: its exact origin(s), comma-separated, e.g. `https://app.example.com`. Leave empty with the single CloudFront setup below |
+   | `CORS_ALLOWED_ORIGINS` | only if a browser calls the API directly from another address: its exact origin(s), comma-separated, e.g. `https://app.example.com`. Leave empty with the Vercel setup below, which forwards `/api` |
 
 4. With a load balancer, set its **health check path** to `/api/health`.
    Every other route requires sign-in, so the default `/` answers `401`.
 
 On startup the app runs any pending Liquibase migrations against the database.
 
-## Hosting the app on CloudFront (web app and API on one address)
+## HTTPS for the API (CloudFront)
 
-One CloudFront distribution serves both: the web app from a private S3 bucket,
-and every `/api/*` request from the Beanstalk API. Browsers get HTTPS, the web
-app and the API share one origin (so no CORS setup), and Beanstalk only needs
-plain HTTP.
-
-```
-https://<distribution>.cloudfront.net/            → S3 bucket (web app)
-https://<distribution>.cloudfront.net/api/...     → Elastic Beanstalk (API), port 80
-```
-
-### 1. Build the web app
-
-```bash
-cd frontend
-npm run build
-```
-
-The build reads `frontend/.env.production`, which sets
-`VITE_API_BASE_URL=https://d226wgv8g9m5g7.cloudfront.net/api`: the same address
-as the web app, so requests stay same-origin. Change it there if the
-distribution changes (local `npm run dev` ignores it and keeps using `/api`).
-This creates `frontend/dist` (`index.html`, `favicon.svg` and `assets/`).
-
-### 2. Put it in a private S3 bucket
-
-1. **S3 → Create bucket**, in the same region as Beanstalk. Keep **Block all
-   public access** on: only CloudFront will read it.
-2. Upload the **contents** of `frontend/dist` (not the folder itself), so
-   `index.html` sits at the top of the bucket next to `assets/`.
-
-### 3. Add the bucket as a second origin
-
-**CloudFront → your distribution → Origins → Create origin:**
+Beanstalk serves plain HTTP. A CloudFront distribution in front of it gives the
+API an HTTPS address (currently `https://d226wgv8g9m5g7.cloudfront.net`):
 
 | Setting | Value |
 |---|---|
-| Origin domain | the bucket (`<bucket>.s3.<region>.amazonaws.com`) |
-| Origin access | **Origin access control settings** → **Create new OAC** (defaults) |
-
-Save, then use **Copy policy** in the banner and paste it into **S3 → the bucket
-→ Permissions → Bucket policy**. Without it CloudFront gets `403 Access Denied`.
-
-### 4. Send `/api/*` to Beanstalk
-
-**Behaviors → Create behavior:**
-
-| Setting | Value |
-|---|---|
-| Path pattern | `/api/*` |
-| Origin | the Beanstalk origin (protocol **HTTP only**, port **80**) |
+| Origin | the Beanstalk domain, protocol **HTTP only**, port **80** |
 | Viewer protocol policy | Redirect HTTP to HTTPS |
 | Allowed HTTP methods | GET, HEAD, OPTIONS, PUT, POST, PATCH, DELETE |
 | Cache policy | **CachingDisabled** (API answers are per user) |
 | Origin request policy | **AllViewerExceptHostHeader** (forwards the bearer token and bodies) |
 
-### 5. Serve the web app by default
+With the protocol on HTTPS, CloudFront can't reach Beanstalk and answers 502
+or 504. Check it with `https://<distribution>.cloudfront.net/api/health`.
 
-1. **CloudFront → Functions → Create function** (`spa-routing`, cloudfront-js
-   2.0) with this code, then **Publish**:
+## Deploying the web app to Vercel
 
-   ```js
-   // Paths without a file extension are pages of the app (e.g. /athletes/123):
-   // serve index.html and let the app's router show the page.
-   function handler(event) {
-     var request = event.request;
-     if (!request.uri.includes('.')) {
-       request.uri = '/index.html';
-     }
-     return request;
-   }
-   ```
+The web app is a static site on Vercel. `frontend/vercel.json` forwards every
+`/api/*` request to the API on CloudFront and serves `index.html` for the app's
+pages, so the browser only ever talks to the Vercel address: no CORS setup, and
+preview deployments work too.
 
-2. **Behaviors → Default (\*) → Edit:**
+1. **vercel.com → Add New → Project** → import this GitHub repository.
+2. **Root Directory:** `frontend`. **Framework Preset:** Vite (build command
+   `npm run build`, output `dist`).
+3. **Deploy.** Every push to `main` redeploys automatically.
 
-   | Setting | Value |
-   |---|---|
-   | Origin | the S3 bucket |
-   | Viewer protocol policy | Redirect HTTP to HTTPS |
-   | Allowed HTTP methods | GET, HEAD |
-   | Cache policy | CachingOptimized |
-   | Origin request policy | none |
-   | Function associations → Viewer request | CloudFront Functions → `spa-routing` |
-
-3. **General → Settings → Edit → Default root object:** `index.html`.
-
-Use the function, not custom error responses: error responses apply to every
-path, so they would also turn the API's real `403` and `404` answers into the
-web app's page.
-
-### 6. Leave `CORS_ALLOWED_ORIGINS` empty
-
-The web app and the API share one address, so the API needs no allowed origins.
-If you do set `CORS_ALLOWED_ORIGINS` (for example for a second site), include
-the distribution's address too, e.g. `https://d226wgv8g9m5g7.cloudfront.net`:
-CloudFront changes the `Host` the API sees, so the API treats the web app's
-requests as cross-origin and would reject them if the list leaves it out.
-
-### 7. Check it
-
-Wait until the distribution is deployed, then:
-
-- `https://<distribution>.cloudfront.net/api/health` → `{"status":"UP"}`
-- `https://<distribution>.cloudfront.net/` → the sign-in page; sign in works
-- Reloading a deeper page such as `/athletes` shows that page, not an error
-
-### Updating the web app
-
-Run `npm run build`, upload the new `dist` contents to the bucket, then
-**Invalidations → Create invalidation** with `/index.html`. The files in
-`assets/` have new names on every build, so only `index.html` needs it.
+The build calls `/api` on its own address (`frontend/.env.production`). If the
+API moves, change the `destination` in `vercel.json`; a `VITE_API_BASE_URL` set
+in the Vercel project overrides `.env.production`, but then the browser calls
+that address directly and it must be listed in `CORS_ALLOWED_ORIGINS`.
