@@ -1,6 +1,147 @@
-# Coach-Pulse
+# CoachPulse
 
-## Backend JWT configuration
+CoachPulse helps coaches see which athletes need attention today. Athletes send a short check-in every morning
+and after training. CoachPulse compares each answer with that athlete's **own** usual levels and gives the coach a
+sorted list, with the reasons in plain language.
+
+> **Observations, not diagnoses.** CoachPulse never diagnoses, never clears anyone to play, and never shows a
+> numeric risk score. Decisions stay with the coach and, when needed, a medical professional.
+
+## Screenshots
+
+From the sample-data mode (`npm run dev:mock`), with a fictional team.
+
+| Coach overview | Athletes, sorted by attention |
+|:---:|:---:|
+| ![Coach overview: team status today and the athletes who need attention](docs/screenshots/coach-overview.png) | ![Athletes list with each athlete's scores next to their usual](docs/screenshots/coach-athletes.png) |
+| **Why an athlete is flagged** | **Alerts, highest priority first** |
+| ![Athlete profile explaining each signal against the athlete's personal baseline](docs/screenshots/coach-athlete-profile.png) | ![Alerts list with the reason for each alert](docs/screenshots/coach-alerts.png) |
+
+<p align="center">
+  <img src="docs/screenshots/athlete-home.png" alt="Athlete app home with the two daily check-ins" width="260">
+  &nbsp;&nbsp;&nbsp;
+  <img src="docs/screenshots/athlete-check-in.png" alt="The athlete's daily check-in" width="260">
+  <br>
+  <b>Athlete app:</b> home and the daily check-in
+</p>
+
+## How it works
+
+1. **The coach** signs up, creates a team and shares its join code.
+2. **Athletes** join with the code and check in from their phone:
+   - every morning: sleep, fatigue, muscle soreness and overall wellness (1–5), plus any symptoms;
+   - after training: effort (RPE), duration, tiredness, soreness, weight before and after, plus any symptoms.
+3. **The backend** builds each athlete's personal baseline from their last 21 days and assesses every check-in as
+   it arrives.
+4. **The coach dashboard** sorts the team by attention and explains every flag, for example fatigue well above
+   that athlete's usual level, or a session much harder than usual.
+5. **The coach follows up** and records what they did (reviewed with the athlete, modified training, contacted a
+   parent or guardian, referred to a medical professional…), building an audit trail.
+
+## Who gets flagged
+
+| Status | When |
+|---|---|
+| **High priority** | The athlete reported a safety symptom. Only a symptom can make someone high priority. |
+| **Needs review** | Fatigue or soreness 2+ points above their usual, wellness 2+ points below it, or a session load (minutes × RPE) 15%+ above their usual. |
+| **Normal** | Everything is within their usual range. |
+
+A baseline needs 7 days of morning check-ins (and 4 sessions for training load). Until then only safety symptoms
+flag, and the coach sees "Baseline still forming". When 5 or more athletes report fatigue above their usual, the
+overview shows a team pattern, so the coach can look at the session plan instead of each athlete.
+
+The thresholds are placeholders until a qualified sports-medicine professional reviews them. The full rules are in
+the [baseline algorithm](docs/baseline-algorithm.md) and the [risk model](docs/risk-model.md).
+
+## Tech stack
+
+| Part | Built with |
+|---|---|
+| Web app (`frontend/`) | React 19, TypeScript, Vite 8, React Router 8, CSS Modules; Vitest and oxlint |
+| API (repository root) | Java 17, Spring Boot 4.1: Web MVC, Security with JWT bearer tokens, Data JPA, Validation |
+| Database | PostgreSQL (hosted on Supabase), schema managed by Liquibase |
+| CI | GitHub Actions on every pull request to `main`: API tests against a throwaway Postgres 17, and frontend lint, tests, build and a smoke test of the production build |
+
+```
+src/main/java/com/coachpulse/   API: user (accounts, sign-in), team, checkin, baseline, risk, security
+src/main/resources/db/          Liquibase changelogs
+frontend/                       web app: coach dashboard and athlete check-in app (see frontend/README.md)
+docs/                           API contract, baseline algorithm, risk model
+.github/workflows/              CI: ci.yml (API), frontend.yml (web app)
+```
+
+## Run it locally
+
+You need JDK 17 (with `JAVA_HOME` pointing to it), Node.js 22.22 or newer, and either the team's Supabase database
+password or Docker.
+
+### 1. API: http://localhost:8080
+
+```bash
+export JWT_SECRET="$(openssl rand -base64 32)"
+export DB_PASSWORD="<the team's Supabase database password>"
+./mvnw spring-boot:run
+```
+
+To use a local database instead of Supabase (the same setup as CI):
+
+```bash
+docker run -d --name coach-pulse-db -p 5432:5432 \
+  -e POSTGRES_DB=coach_pulse -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres postgres:17
+export SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/coach_pulse
+export SPRING_DATASOURCE_USERNAME=postgres
+export SPRING_DATASOURCE_PASSWORD=postgres
+export JWT_SECRET="$(openssl rand -base64 32)"
+./mvnw spring-boot:run
+```
+
+Liquibase creates the tables on startup.
+
+### 2. Web app: http://localhost:5173
+
+Run npm inside `frontend/`; the repository root is the Maven project.
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+The dev server forwards `/api` to the API on port 8080. Create a coach account at `/signup` and set up a team;
+athletes join at `/athlete/join` with the team's code.
+
+No API running? `npm run dev:mock` opens the app with a fictional sample team and no sign-in.
+
+### Tests
+
+```bash
+./mvnw verify                                             # API, with the database variables above
+cd frontend && npm test && npm run lint && npm run build  # web app
+```
+
+## Project status
+
+**Working end to end:** coach sign-up and sign-in, team setup with a join code, athletes joining and sending both
+check-ins, personal baselines, the risk engine, and the coach overview, athlete list, athlete profiles and alerts.
+
+**Next:**
+
+- Saving coach actions on the server. The dialog and audit trail are built; the endpoint isn't yet.
+- Raising alerts automatically from assessments.
+- Endpoints for the Training, Trends, Reports and Settings screens, which show sample data for now.
+- CoachPulse Assistant: an AI helper that answers coach questions from the team's own data. The drawer is built
+  with prepared answers, and it will never diagnose.
+
+## Documentation
+
+- [API contract](docs/api-contract.md): endpoints, JSON shapes and the error format
+- [Baseline algorithm](docs/baseline-algorithm.md) and [risk model](docs/risk-model.md): how athletes are flagged
+- [Web app](frontend/README.md): routes, sign-in, sample data and demo scenarios
+- [Backend reference](#backend-reference) below: authentication, roles and endpoints
+
+## Backend reference
+
+### Backend JWT configuration
 
 Set `JWT_SECRET` to a random value with at least 32 bytes before starting the
 Spring Boot application. Generate a value with:
@@ -14,7 +155,7 @@ JWTs use HS256 and expire after 15 minutes by default. Set
 lifetime. Tokens contain only the subject (user ID), the user's `role`, the
 issued-at time, and the expiration time.
 
-## Protected endpoints
+### Protected endpoints
 
 Every API route requires a valid JWT in the `Authorization: Bearer <token>`
 header, except `POST /api/auth/register`, `POST /api/auth/login`, and
@@ -28,14 +169,23 @@ Controllers read the verified identity from the authentication context, for
 example `@AuthenticationPrincipal Jwt jwt` and `jwt.getSubject()` for the user
 ID. Never take the user ID or role from request bodies, headers, or parameters.
 
-## Role authorization
+### Role authorization
 
 Role permissions are enforced on the server with method security. Annotate a
 controller method with the roles allowed to call it:
 
 ```java
+// Coach only
 @PreAuthorize("hasRole('COACH')")
+public ResponseEntity<?> coachEndpoint() {
+   // ...
+}
+
+// Coach OR Admin
 @PreAuthorize("hasAnyRole('COACH', 'ADMIN')")
+public ResponseEntity<?> coachOrAdminEndpoint() {
+   // ...
+}
 ```
 
 Roles come only from the verified JWT. There is no role hierarchy, so `ADMIN`
@@ -45,7 +195,7 @@ standard Problem Details format; a request with no valid token still gets `401`.
 Hiding pages or buttons in the frontend is only for user experience. Every
 restricted endpoint must have its own role check on the server.
 
-## User roles
+### User roles
 
 CoachPulse roles are defined in `UserRole`: `ATHLETE`, `COACH`, and `ADMIN`.
 They match the `ck_users_role` database constraint, so every user has exactly
@@ -54,7 +204,7 @@ whose role is missing or not one of these exact names is rejected with `401`.
 For valid tokens the role is available to authorization logic as the authority
 `ROLE_<NAME>` (for example `ROLE_COACH`, usable with `hasRole("COACH")`).
 
-## User registration
+### User registration
 
 `POST /api/auth/register` accepts `email`, `password`, `firstName`, and
 `lastName`. Email and names are trimmed, and email is stored in lowercase.
@@ -64,7 +214,7 @@ in the response. Success returns `201 Created`; invalid fields return `400`,
 and an email that is already registered returns `409` using the standard
 Problem Details response format.
 
-## Login and logout
+### Login and logout
 
 `POST /api/auth/login` accepts `email` and `password`. Successful login returns
 a signed bearer JWT in `accessToken` and its configured lifetime in
@@ -76,7 +226,7 @@ message whether the email is unknown or the password is wrong.
 means the client discards its token; a previously issued token remains valid
 until it expires. Clients should remove the token from local storage on logout.
 
-## Teams and the coach dashboard
+### Teams and the coach dashboard
 
 `GET /api/me` returns the signed-in user, their athlete profile id (athletes
 only), and their team memberships.
@@ -91,7 +241,7 @@ These answer `404` unless the caller coaches the team, so team ids cannot be
 probed. Formats are in `docs/api-contract.md`. "Today" is the calendar day in
 the server's time zone.
 
-## Athletes and check-ins
+### Athletes and check-ins
 
 Athletes cannot self-register. They join with their coach's team code:
 `GET /api/auth/join/{code}` (public) shows the team, and `POST /api/auth/join`
@@ -104,14 +254,14 @@ for the athlete only. `GET /api/athletes/{athleteId}/today` and
 anyone else gets `404`. `symptoms` is required on both check-ins, so a missing
 answer is never stored as "no symptoms".
 
-## Personal baselines
+### Personal baselines
 
 Each athlete's usual wellness scores and training load are calculated live
 from their own last 21 days of check-ins (`BaselineService`), and today's
 check-ins are compared with them (`DeviationDetector`). The rules and thresholds
 are in `docs/baseline-algorithm.md` and `BaselineRules`.
 
-## Risk engine
+### Risk engine
 
 `RiskEngine` scores the deviations 0–100 and sets the `GREEN`/`YELLOW`/`RED`
 status (`docs/risk-model.md`, `RiskRules`). Only a safety symptom can make an
