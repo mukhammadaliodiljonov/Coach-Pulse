@@ -156,6 +156,20 @@ describe('signalsFromReasons', () => {
     )
     expect(fromServer).toEqual(local)
   })
+
+  it('never shows poor sleep as a signal: it only adds to the server’s risk score', () => {
+    expect(signalsFromReasons([{ kind: 'RECOVERY', metric: 'SLEEP', value: 1, baseline: 4 }], 'Alex')).toEqual([])
+
+    const withFatigue = signalsFromReasons(
+      [
+        { kind: 'RECOVERY', metric: 'FATIGUE', value: 5, baseline: 2 },
+        { kind: 'RECOVERY', metric: 'SLEEP', value: 1, baseline: 4 },
+      ],
+      'Alex',
+    )
+    expect(withFatigue).toHaveLength(1)
+    expect(withFatigue[0].detail).not.toMatch(/sleep/i)
+  })
 })
 
 describe('activity and alerts', () => {

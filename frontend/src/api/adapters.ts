@@ -66,7 +66,7 @@ export const CODE_BY_ACTION = invert(ACTION_BY_CODE)
 /** RED / YELLOW / GREEN are shown as High priority / Needs review / Normal. */
 export const STATUS_BY_RISK: Record<RiskStatus, Status> = { RED: 'high', YELLOW: 'review', GREEN: 'normal' }
 
-const METRIC_BY_CODE: Record<RecoveryMetricCode, RecoveryMetric> = {
+const METRIC_BY_CODE: Record<Exclude<RecoveryMetricCode, 'SLEEP'>, RecoveryMetric> = {
   FATIGUE: 'Fatigue',
   WELLNESS: 'Wellness',
   SORENESS: 'Soreness',
@@ -170,7 +170,9 @@ export function signalsFromReasons(
   }
 
   const deviations = reasons.flatMap((r) =>
-    r.kind === 'RECOVERY' ? [{ metric: METRIC_BY_CODE[r.metric], value: r.value, usual: round1(r.baseline) }] : [],
+    r.kind === 'RECOVERY' && r.metric !== 'SLEEP'
+      ? [{ metric: METRIC_BY_CODE[r.metric], value: r.value, usual: round1(r.baseline) }]
+      : [],
   )
   if (deviations.length > 0) signals.push(recoverySignal(orderDeviations(deviations), firstName))
 
