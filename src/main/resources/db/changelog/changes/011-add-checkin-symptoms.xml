@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+            https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- Both check-ins end with the same six safety symptoms; the post-training one also asks tiredness and soreness. -->
+    <changeSet id="011-add-checkin-symptoms" author="coach-pulse">
+        <addColumn tableName="morning_checkins">
+            <column name="headache" type="BOOLEAN" defaultValueBoolean="false"><constraints nullable="false"/></column>
+            <column name="dizziness" type="BOOLEAN" defaultValueBoolean="false"><constraints nullable="false"/></column>
+            <column name="nausea" type="BOOLEAN" defaultValueBoolean="false"><constraints nullable="false"/></column>
+            <column name="light_sensitivity" type="BOOLEAN" defaultValueBoolean="false"><constraints nullable="false"/></column>
+            <column name="balance_problems" type="BOOLEAN" defaultValueBoolean="false"><constraints nullable="false"/></column>
+            <column name="confusion" type="BOOLEAN" defaultValueBoolean="false"><constraints nullable="false"/></column>
+        </addColumn>
+        <addColumn tableName="workout_checkins">
+            <column name="nausea" type="BOOLEAN" defaultValueBoolean="false"><constraints nullable="false"/></column>
+            <column name="balance_problems" type="BOOLEAN" defaultValueBoolean="false"><constraints nullable="false"/></column>
+            <column name="confusion" type="BOOLEAN" defaultValueBoolean="false"><constraints nullable="false"/></column>
+            <!-- Nullable: check-ins saved before these questions existed have no answer. -->
+            <column name="tiredness" type="SMALLINT"/>
+            <column name="muscle_soreness" type="SMALLINT"/>
+        </addColumn>
+        <sql>ALTER TABLE workout_checkins ADD CONSTRAINT ck_workout_checkins_tiredness CHECK (tiredness BETWEEN 1 AND 5)</sql>
+        <sql>ALTER TABLE workout_checkins ADD CONSTRAINT ck_workout_checkins_muscle_soreness CHECK (muscle_soreness BETWEEN 1 AND 5)</sql>
+        <rollback>
+            <sql>ALTER TABLE workout_checkins DROP CONSTRAINT ck_workout_checkins_muscle_soreness</sql>
+            <sql>ALTER TABLE workout_checkins DROP CONSTRAINT ck_workout_checkins_tiredness</sql>
+            <dropColumn tableName="workout_checkins">
+                <column name="muscle_soreness"/>
+                <column name="tiredness"/>
+                <column name="confusion"/>
+                <column name="balance_problems"/>
+                <column name="nausea"/>
+            </dropColumn>
+            <dropColumn tableName="morning_checkins">
+                <column name="confusion"/>
+                <column name="balance_problems"/>
+                <column name="light_sensitivity"/>
+                <column name="nausea"/>
+                <column name="dizziness"/>
+                <column name="headache"/>
+            </dropColumn>
+        </rollback>
+    </changeSet>
+</databaseChangeLog>

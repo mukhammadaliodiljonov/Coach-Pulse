@@ -11,7 +11,7 @@ public record RegistrationResponse(
         UserRole role,
         OffsetDateTime createdAt) {
 
-    static RegistrationResponse from(UserAccount user) {
+    public static RegistrationResponse from(UserAccount user) {
         return new RegistrationResponse(
                 user.getId(),
                 user.getEmail(),

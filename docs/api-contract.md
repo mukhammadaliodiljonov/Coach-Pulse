@@ -1,8 +1,8 @@
 # CoachPulse API contract (proposed)
 
-**Status:** proposed by the web front end, for the backend to implement. **Implemented so far:** `GET /api/me`,
-`POST /api/teams`, `GET /api/teams/{teamId}`, `.../athletes/today`, `.../alerts` and `.../activity` (see the notes
-under each). The athlete endpoints and `POST /api/athletes/{athleteId}/actions` don't exist yet.
+**Status:** proposed by the web front end, for the backend to implement. **Implemented so far:** everything in Phase 1
+except `POST /api/athletes/{athleteId}/actions`, plus `POST /api/teams` and the athlete join endpoints below (see the
+notes under each).
 
 - TypeScript mirror of every shape: [`frontend/src/api/types.ts`](../frontend/src/api/types.ts)
 - How the web app maps it onto screens: [`frontend/src/api/adapters.ts`](../frontend/src/api/adapters.ts)
@@ -64,7 +64,24 @@ Creates a team from the setup wizard; the signed-in coach becomes its `HEAD_COAC
 `name` (≤150) and `sport` (≤100) are required. Responds `201` with the team, as `GET /api/teams/{teamId}` returns it,
 including a generated `joinCode`.
 
-All `/api/teams/{teamId}…` endpoints answer `404` unless the caller is one of the team's coaches.
+`GET /api/teams/{teamId}` answers `404` unless the caller is on the team (athletes see their coaches); the other
+`/api/teams/{teamId}…` endpoints only for the team's coaches.
+
+### `GET /api/auth/join/{joinCode}` and `POST /api/auth/join`
+
+Public. An athlete checks their coach's code (case-insensitive), then creates their account on that team:
+
+```json
+{ "name": "Northside U17", "sport": "Football", "headCoach": { "firstName": "Sam", "lastName": "Rivera" } }
+```
+
+```json
+{ "joinCode": "D5C-F29T", "email": "emma@club.org", "password": "…", "firstName": "Emma", "lastName": "Wilson" }
+```
+
+`POST` creates an `ATHLETE` account, its athlete profile and the team membership, and responds `201` like
+registration; the app then signs in. This is the only way to create an athlete account. An unknown code is `404`, an
+existing email `409`.
 
 ### `GET /api/teams/{teamId}`
 
@@ -133,8 +150,8 @@ the coach app.
   app evaluates the check-in itself with the same rules.
 - `alert` — today’s alert, if one was raised, with the latest coach action on it.
 
-**Implemented with these gaps** until the schema changes below land: `position`, `baseline`, `assessment`,
-`latestAction`, and the workout's `tiredness`/`muscleSoreness` are always `null`; morning `symptoms` are always `[]`.
+**Implemented with these gaps** until the schema changes below land: `position`, `baseline`, `assessment` and
+`latestAction` are always `null`, and so are `tiredness`/`muscleSoreness` on workouts saved before migration 011.
 “Today” is the server's time zone.
 
 ### `GET /api/teams/{teamId}/alerts?status=RESOLVED&limit=20`
@@ -208,7 +225,9 @@ Newest first, one entry per day: `{ "date": "2026-10-05", "morning": MorningChec
 { "sleepQuality": 4, "fatigue": 3, "muscleSoreness": 2, "overallWellness": 4, "symptoms": ["NAUSEA"] }
 ```
 
-All scores 1–5. `symptoms` is empty when the athlete chose “None of these”. Responds `201` with the saved check-in.
+All scores 1–5. `symptoms` is empty when the athlete chose “None of these”; it is required, so a missing answer is
+never read as no symptoms. Responds `201` with the saved check-in. Only the athlete may submit their check-ins; the
+athlete and their team's coaches may read `today` and `checkins` (`404` for anyone else).
 
 ### `POST /api/athletes/{athleteId}/workout-checkins`
 
@@ -262,12 +281,12 @@ The design handoff is the agreed product spec; these are the gaps between it and
 
 | Change | Why |
 |---|---|
-| All six symptoms on **both** check-ins: add `nausea`, `balance_problems`, `confusion` to `workout_checkins`, and all six to `morning_checkins` (or a `symptoms TEXT[]` column on each) | The safety check ends both check-ins and lists six symptoms |
-| `workout_checkins`: `tiredness SMALLINT` and `muscle_soreness SMALLINT` (1–5), optional `session_id` | The post-training flow asks both; sessions group check-ins |
+| ~~All six symptoms on both check-ins~~ — done in migration 011 (boolean columns) | The safety check ends both check-ins and lists six symptoms |
+| `workout_checkins`: ~~`tiredness`, `muscle_soreness`~~ (done in 011), optional `session_id` | The post-training flow asks both; sessions group check-ins |
 | New `coach_actions` table: `id`, `athlete_id`, `alert_id` (nullable), `coach_id`, `action VARCHAR(40)`, `notes TEXT`, `created_at` — insert-only | The append-only follow-up history and audit trail |
-| `teams`: `age_group`, `training_frequency`, `join_code` (unique) | Team setup wizard; athletes join with a code |
+| ~~`teams`: `age_group`, `training_frequency`, `join_code`~~ — done in migration 010 | Team setup wizard; athletes join with a code |
 | `athlete_profiles`: `position`, `guardian_name`, `guardian_phone` | Shown across the coach app and the athlete profile |
-| `team_members.member_role`: check constraint for `HEAD_COACH`, `ASSISTANT_COACH`, `ATHLETE` | “Head coach” labels and who can see answers |
+| ~~`team_members.member_role` check constraint~~ — done in migration 010 | “Head coach” labels and who can see answers |
 | New `sessions` table: `id`, `team_id`, `starts_at`, `type`, `duration_minutes` | Training screen and athlete schedule |
 | `risk_assessments.reason_codes` default `'[]'::jsonb` | Reasons are a list |
 

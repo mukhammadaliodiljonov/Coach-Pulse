@@ -18,8 +18,15 @@ public class RegistrationService {
         this.passwordEncoder = passwordEncoder;
     }
 
+    /** Self-registration creates coaches; athletes are created by joining a team (TeamJoinService). */
     @Transactional
     public RegistrationResponse register(RegistrationRequest request) {
+        return RegistrationResponse.from(createAccount(request, UserRole.COACH));
+    }
+
+    /** Creates an account with a normalized email and a hashed password. */
+    @Transactional
+    public UserAccount createAccount(RegistrationRequest request, UserRole role) {
         String email = request.email().trim().toLowerCase(Locale.ROOT);
         if (users.existsByEmailIgnoreCase(email)) {
             throw new ConflictException("An account with this email already exists");
@@ -30,7 +37,7 @@ public class RegistrationService {
                 request.firstName().trim(),
                 request.lastName().trim(),
                 passwordEncoder.encode(request.password()),
-                UserRole.COACH);
-        return RegistrationResponse.from(users.save(user));
+                role);
+        return users.save(user);
     }
 }

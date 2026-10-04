@@ -15,5 +15,6 @@
     <include file="changes/008-create-alerts.xml" relativeToChangelogFile="true"/>
     <include file="changes/009-add-user-password-hash.xml" relativeToChangelogFile="true"/>
     <include file="changes/010-add-team-setup-columns.xml" relativeToChangelogFile="true"/>
+    <include file="changes/011-add-checkin-symptoms.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

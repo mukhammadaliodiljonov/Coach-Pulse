@@ -17,11 +17,15 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Team endpoints for coaches; each team's data is limited to its own coaches (see {@link TeamAccess}). */
+/**
+ * Team endpoints. Creating a team and the dashboard are for coaches; a team's basic details are visible to
+ * all its members. Each team's data is limited to its own members (see {@link TeamAccess}).
+ */
 @RestController
 @RequestMapping("/api/teams")
-@PreAuthorize("hasAnyRole('COACH', 'ADMIN')")
 public class TeamController {
+
+    private static final String COACHES = "hasAnyRole('COACH', 'ADMIN')";
 
     private final TeamService teamService;
     private final TeamDashboardService dashboard;
@@ -32,6 +36,7 @@ public class TeamController {
     }
 
     @PostMapping
+    @PreAuthorize(COACHES)
     @ResponseStatus(HttpStatus.CREATED)
     public TeamResponse create(@Valid @RequestBody CreateTeamRequest request, @AuthenticationPrincipal Jwt jwt) {
         return teamService.create(request, userId(jwt));
@@ -43,11 +48,13 @@ public class TeamController {
     }
 
     @GetMapping("/{teamId}/athletes/today")
+    @PreAuthorize(COACHES)
     public TeamDayResponse athletesToday(@PathVariable UUID teamId, @AuthenticationPrincipal Jwt jwt) {
         return dashboard.athletesToday(teamId, userId(jwt));
     }
 
     @GetMapping("/{teamId}/alerts")
+    @PreAuthorize(COACHES)
     public List<AlertResponse> alerts(
             @PathVariable UUID teamId,
             @RequestParam(required = false) String status,
@@ -57,6 +64,7 @@ public class TeamController {
     }
 
     @GetMapping("/{teamId}/activity")
+    @PreAuthorize(COACHES)
     public List<ActivityResponse> activity(
             @PathVariable UUID teamId,
             @RequestParam(defaultValue = "50") int limit,
