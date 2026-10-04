@@ -119,3 +119,42 @@ athlete `RED`. Every check-in is assessed when it is submitted and stored in
 `risk_assessments` with its score, reasons, and engine version; the dashboard
 shows each athlete's latest assessment from today. The score is never sent to
 clients. Alerts are not raised from assessments yet.
+
+## Deploying the backend to AWS Elastic Beanstalk
+
+Use the **Java SE** platform (Corretto 17 or newer). It runs the Spring Boot
+JAR directly; no WAR is needed.
+
+1. Build: `./mvnw clean package`. This creates `target/demo-0.0.1-SNAPSHOT.jar`.
+   The full-application test (`CoachPulseApplicationTests`) only runs when
+   `DB_PASSWORD` is set, so the build works without database credentials.
+2. Create the environment and upload that JAR.
+3. In **Configuration → Updates, monitoring, and logging → Environment
+   properties**, set:
+
+   | Property | Value |
+   |---|---|
+   | `SERVER_PORT` | `5000` (the port Beanstalk's nginx forwards to) |
+   | `DB_PASSWORD` | the Supabase database password |
+   | `JWT_SECRET` | a random value of at least 32 bytes (`openssl rand -base64 32`) |
+   | `CORS_ALLOWED_ORIGINS` | the frontend's exact origin(s), comma-separated, e.g. `https://app.example.com` |
+
+4. With a load balancer, set its **health check path** to `/api/health`.
+   Every other route requires sign-in, so the default `/` answers `401`.
+
+On startup the app runs any pending Liquibase migrations against the database.
+
+### The frontend
+
+The JAR contains only the API. Build the web app with the API's URL and host
+the `frontend/dist` folder as a static site (for example S3 with CloudFront):
+
+```bash
+cd frontend
+VITE_API_BASE_URL=https://your-api.example.com/api npm run build
+```
+
+The site's origin must be listed in `CORS_ALLOWED_ORIGINS`. The app routes
+pages in the browser, so the host must serve `index.html` for unknown paths
+(in CloudFront, custom error responses for 403 and 404 returning
+`/index.html` with status 200).

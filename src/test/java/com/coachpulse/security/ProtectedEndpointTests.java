@@ -6,6 +6,7 @@ import java.util.Base64;
 import java.util.UUID;
 import javax.crypto.spec.SecretKeySpec;
 
+import com.coachpulse.HealthController;
 import com.coachpulse.user.AuthenticationController;
 import com.coachpulse.user.AuthenticationService;
 import com.coachpulse.user.LoginResponse;
@@ -40,7 +41,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest({ ProtectedEndpointTests.TestController.class, AuthenticationController.class })
+@WebMvcTest({ ProtectedEndpointTests.TestController.class, AuthenticationController.class, HealthController.class })
 @Import({ ProtectedEndpointTests.TestController.class, JwtSecurityConfiguration.class, JwtTokenService.class })
 @TestPropertySource(properties = "app.security.jwt.secret=" + ProtectedEndpointTests.SECRET)
 class ProtectedEndpointTests {
@@ -136,6 +137,13 @@ class ProtectedEndpointTests {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content("{\"email\":\"sam@club.org\",\"password\":\"correct-horse\"}"))
 			.andExpect(status().isOk());
+	}
+
+	@Test
+	void healthCheckIsPublic() throws Exception {
+		mockMvc.perform(get("/api/health"))
+			.andExpect(status().isOk())
+			.andExpect(content().json("{\"status\":\"UP\"}"));
 	}
 
 	@Test
