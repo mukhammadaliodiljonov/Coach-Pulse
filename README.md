@@ -108,7 +108,14 @@ answer is never stored as "no symptoms".
 
 Each athlete's usual wellness scores and training load are calculated live
 from their own last 21 days of check-ins (`BaselineService`), and today's
-check-ins are compared with them (`DeviationDetector`). The dashboard gets both
-as `baseline` and `assessment`. The rules and thresholds are in
-`docs/baseline-algorithm.md` and `BaselineRules`. Assessments are not stored and
-no alerts are raised yet; that is the signal engine's job.
+check-ins are compared with them (`DeviationDetector`). The rules and thresholds
+are in `docs/baseline-algorithm.md` and `BaselineRules`.
+
+## Risk engine
+
+`RiskEngine` scores the deviations 0–100 and sets the `GREEN`/`YELLOW`/`RED`
+status (`docs/risk-model.md`, `RiskRules`). Only a safety symptom can make an
+athlete `RED`. Every check-in is assessed when it is submitted and stored in
+`risk_assessments` with its score, reasons, and engine version; the dashboard
+shows each athlete's latest assessment from today. The score is never sent to
+clients. Alerts are not raised from assessments yet.

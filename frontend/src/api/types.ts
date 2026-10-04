@@ -13,7 +13,8 @@ export type MemberRole = 'HEAD_COACH' | 'ASSISTANT_COACH' | 'ATHLETE'
 export type SymptomCode = 'HEADACHE' | 'DIZZINESS' | 'NAUSEA' | 'LIGHT_SENSITIVITY' | 'BALANCE_PROBLEMS' | 'CONFUSION'
 export type RiskStatus = 'GREEN' | 'YELLOW' | 'RED'
 export type AlertStatus = 'OPEN' | 'ACKNOWLEDGED' | 'RESOLVED'
-export type RecoveryMetricCode = 'FATIGUE' | 'WELLNESS' | 'SORENESS'
+/** SLEEP only adds to the server's risk score; it's never shown as a signal. */
+export type RecoveryMetricCode = 'FATIGUE' | 'WELLNESS' | 'SORENESS' | 'SLEEP'
 export type CoachActionCode =
   | 'REVIEWED_WITH_ATHLETE'
   | 'MODIFIED_TRAINING'

@@ -13,14 +13,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import com.coachpulse.risk.RiskService;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
  * The athlete's own check-ins. "Today" is the calendar day in the server's time zone, as on the coach
- * dashboard. Check-ins are only stored here; the server-side signal engine and alerts come later, and
- * until then the coach app evaluates them itself.
+ * dashboard. Every check-in is assessed by the risk engine right away and the assessment stored with it.
  */
 @Service
 public class CheckinService {
@@ -29,11 +29,13 @@ public class CheckinService {
 
     private final JdbcClient jdbc;
     private final AthleteAccess athleteAccess;
+    private final RiskService risk;
     private final Clock clock;
 
-    public CheckinService(JdbcClient jdbc, AthleteAccess athleteAccess, Clock clock) {
+    public CheckinService(JdbcClient jdbc, AthleteAccess athleteAccess, RiskService risk, Clock clock) {
         this.jdbc = jdbc;
         this.athleteAccess = athleteAccess;
+        this.risk = risk;
         this.clock = clock;
     }
 
@@ -41,7 +43,7 @@ public class CheckinService {
     public MorningCheckin submitMorning(UUID athleteId, UUID userId, MorningCheckinRequest request) {
         athleteAccess.requireSelf(athleteId, userId);
         Set<SymptomCode> symptoms = Set.copyOf(request.symptoms());
-        return jdbc.sql("""
+        MorningCheckin checkin = jdbc.sql("""
                         INSERT INTO morning_checkins (athlete_id, sleep_quality, fatigue, muscle_soreness, overall_wellness,
                             headache, dizziness, nausea, light_sensitivity, balance_problems, confusion)
                         VALUES (:athleteId, :sleepQuality, :fatigue, :muscleSoreness, :overallWellness,
@@ -55,13 +57,15 @@ public class CheckinService {
                 .params(symptomParams(symptoms))
                 .query((rs, row) -> CheckinRows.morning(rs))
                 .single();
+        risk.assessAndStore(athleteId);
+        return checkin;
     }
 
     @Transactional
     public WorkoutCheckin submitWorkout(UUID athleteId, UUID userId, WorkoutCheckinRequest request) {
         athleteAccess.requireSelf(athleteId, userId);
         Set<SymptomCode> symptoms = Set.copyOf(request.symptoms());
-        return jdbc.sql("""
+        WorkoutCheckin checkin = jdbc.sql("""
                         INSERT INTO workout_checkins (athlete_id, rpe, duration_minutes, tiredness, muscle_soreness,
                             pre_weight_kg, post_weight_kg,
                             headache, dizziness, nausea, light_sensitivity, balance_problems, confusion)
@@ -79,6 +83,8 @@ public class CheckinService {
                 .params(symptomParams(symptoms))
                 .query((rs, row) -> CheckinRows.workout(rs))
                 .single();
+        risk.assessAndStore(athleteId);
+        return checkin;
     }
 
     @Transactional(readOnly = true)

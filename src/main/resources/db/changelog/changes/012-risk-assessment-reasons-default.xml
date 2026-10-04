@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+            https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- Reasons are a list (docs/api-contract.md), so the default is an empty array, not an empty object. -->
+    <changeSet id="012-risk-assessment-reasons-default" author="coach-pulse">
+        <sql>ALTER TABLE risk_assessments ALTER COLUMN reason_codes SET DEFAULT '[]'::jsonb</sql>
+        <rollback>
+            <sql>ALTER TABLE risk_assessments ALTER COLUMN reason_codes SET DEFAULT '{}'::jsonb</sql>
+        </rollback>
+    </changeSet>
+</databaseChangeLog>
