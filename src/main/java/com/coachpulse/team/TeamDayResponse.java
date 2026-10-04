@@ -5,18 +5,18 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 
-import com.coachpulse.baseline.Assessment;
 import com.coachpulse.baseline.Baseline;
 import com.coachpulse.checkin.MorningCheckin;
 import com.coachpulse.checkin.WorkoutCheckin;
+import com.coachpulse.risk.Assessment;
 
 /** {@code GET /api/teams/{teamId}/athletes/today}, as described in docs/api-contract.md. */
 public record TeamDayResponse(UUID teamId, LocalDate date, List<AthleteDay> athletes) {
 
     /**
-     * One athlete's day. {@code baseline} is null while it's forming; {@code assessment} is today's verdict
-     * from the baseline rules (docs/baseline-algorithm.md), computed live. {@code position} is null until
-     * athlete_profiles has the column.
+     * One athlete's day. {@code baseline} is null while it's forming; {@code assessment} is today's verdict from
+     * the risk engine (docs/risk-model.md): the latest stored today, or computed live (id null) without a check-in
+     * today. {@code position} is null until athlete_profiles has the column.
      */
     public record AthleteDay(
             UUID athleteId,

@@ -150,8 +150,9 @@ the coach app.
   app evaluates the check-in itself with the same rules.
 - `alert` — today’s alert, if one was raised, with the latest coach action on it.
 
-`baseline` and `assessment` follow [`baseline-algorithm.md`](baseline-algorithm.md): the assessment is computed live
-on each request, so its `id` is `null`. **Gaps** until the schema changes below land: `position` and `latestAction`
+`baseline` follows [`baseline-algorithm.md`](baseline-algorithm.md) and `assessment` the risk model in
+[`risk-model.md`](risk-model.md): the latest one stored today, or one computed live (`id` `null`) for an athlete
+without a check-in today. **Gaps** until the schema changes below land: `position` and `latestAction`
 are always `null`, and so are `tiredness`/`muscleSoreness` on workouts saved before migration 011.
 “Today” is the server's time zone.
 
@@ -254,8 +255,9 @@ athlete and their team's coaches may read `today` and `checkins` (`404` for anyo
 
 ## Signal engine and `reason_codes`
 
-The rules come from the design handoff. The server implements them in `com.coachpulse.baseline` (with the baseline
-calculations, see [`baseline-algorithm.md`](baseline-algorithm.md)); the web app keeps the same rules in
+The rules come from the design handoff. The server implements them in `com.coachpulse.baseline` and scores them in
+`com.coachpulse.risk` (see [`baseline-algorithm.md`](baseline-algorithm.md) and [`risk-model.md`](risk-model.md)),
+storing every assessment in `risk_assessments`; the web app keeps the same rules in
 [`frontend/src/domain/signals.ts`](../frontend/src/domain/signals.ts) for when there's no assessment. Everything is
 relative to the athlete’s **own** baseline:
 
@@ -265,8 +267,8 @@ relative to the athlete’s **own** baseline:
 - Until a baseline exists, only safety symptoms flag. The thresholds are placeholders to be reviewed by a qualified
   sports-medicine professional before launch; record the rules version in `engine_version`.
 
-Store the reasons in `risk_assessments.reason_codes` as a JSON **array** (the default is currently `'{}'::jsonb`;
-`'[]'::jsonb` would match). One element per reason; a recovery reason per metric:
+`risk_assessments.reason_codes` holds the reasons as a JSON **array** (default `'[]'::jsonb` since migration 012). One
+element per reason; a recovery reason per metric (`SLEEP` reasons only add to the score and are never shown):
 
 ```json
 [

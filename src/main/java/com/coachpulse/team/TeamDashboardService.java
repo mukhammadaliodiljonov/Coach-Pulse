@@ -15,6 +15,8 @@ import java.util.Set;
 import java.util.UUID;
 
 import com.coachpulse.baseline.BaselineService;
+import com.coachpulse.risk.Assessment;
+import com.coachpulse.risk.RiskService;
 import com.coachpulse.checkin.CheckinRows;
 import com.coachpulse.checkin.MorningCheckin;
 import com.coachpulse.checkin.WorkoutCheckin;
@@ -43,14 +45,16 @@ public class TeamDashboardService {
     private final JdbcClient jdbc;
     private final TeamAccess teamAccess;
     private final BaselineService baselines;
+    private final RiskService risk;
     private final ObjectMapper objectMapper;
     private final Clock clock;
 
-    public TeamDashboardService(JdbcClient jdbc, TeamAccess teamAccess, BaselineService baselines,
+    public TeamDashboardService(JdbcClient jdbc, TeamAccess teamAccess, BaselineService baselines, RiskService risk,
             ObjectMapper objectMapper, Clock clock) {
         this.jdbc = jdbc;
         this.teamAccess = teamAccess;
         this.baselines = baselines;
+        this.risk = risk;
         this.objectMapper = objectMapper;
         this.clock = clock;
     }
@@ -133,7 +137,8 @@ public class TeamDashboardService {
                             null));
                 });
 
-        Map<UUID, BaselineService.Result> evaluated = baselines.evaluate(ids, morning, latestWorkout);
+        Map<UUID, BaselineService.Baselines> baselinesById = baselines.calculate(ids, latestWorkout);
+        Map<UUID, Assessment> assessments = risk.today(ids, morning, latestWorkout, baselinesById);
 
         List<AthleteDay> days = athletes.stream()
                 .map(a -> new AthleteDay(
@@ -144,9 +149,9 @@ public class TeamDashboardService {
                         a.dateOfBirth(),
                         morning.get(a.athleteId()),
                         latestWorkout.get(a.athleteId()),
-                        evaluated.get(a.athleteId()).baseline(),
+                        baselinesById.get(a.athleteId()).baseline(),
                         loadHistory(loads.getOrDefault(a.athleteId(), Map.of()), historyStart),
-                        evaluated.get(a.athleteId()).assessment(),
+                        assessments.get(a.athleteId()),
                         alerts.get(a.athleteId())))
                 .toList();
         return new TeamDayResponse(teamId, today, days);

@@ -1,7 +1,6 @@
 package com.coachpulse.baseline;
 
 import java.time.LocalDate;
-import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,8 +10,9 @@ import com.coachpulse.checkin.MorningCheckin;
 import com.coachpulse.checkin.WorkoutCheckin;
 
 /**
- * Compares today's check-ins with the athlete's baseline (docs/baseline-algorithm.md). Pure, so the rules
- * can be tested without a database; the same rules run in the web app's signals.ts when there's no assessment.
+ * Compares today's check-ins with the athlete's baseline and lists what deviates (docs/baseline-algorithm.md).
+ * Pure, so the rules can be tested without a database. The risk engine turns these reasons into a score and a
+ * status (docs/risk-model.md); the web app's signals.ts applies the same rules when there's no assessment.
  */
 public final class DeviationDetector {
 
@@ -24,9 +24,10 @@ public final class DeviationDetector {
      * @param latestWorkout the athlete's latest post-training check-in from any day, or null
      * @param baseline the wellness baseline, or null while forming
      * @param load the load baseline, or null while forming
+     * @return safety symptoms first, then recovery (fatigue, wellness, soreness, sleep), then training load
      */
-    public static Assessment assess(MorningCheckin morning, WorkoutCheckin latestWorkout, Baseline baseline,
-            LoadBaseline load, LocalDate today, ZoneId zone, OffsetDateTime now) {
+    public static List<Reason> reasons(MorningCheckin morning, WorkoutCheckin latestWorkout, Baseline baseline,
+            LoadBaseline load, LocalDate today, ZoneId zone) {
         List<Reason> reasons = new ArrayList<>();
 
         // Safety symptoms need no baseline. Symptoms after yesterday's training still count this morning.
@@ -37,7 +38,6 @@ public final class DeviationDetector {
                 && !latestWorkout.createdAt().atZoneSameInstant(zone).toLocalDate().isBefore(today.minusDays(1))) {
             reasons.add(Reason.safetySymptom(latestWorkout.symptoms(), "WORKOUT_CHECKIN"));
         }
-        boolean safety = !reasons.isEmpty();
 
         if (morning != null && baseline != null) {
             if (worseBy(morning.fatigue(), baseline.fatigue(), true)) {
@@ -49,6 +49,10 @@ public final class DeviationDetector {
             if (worseBy(morning.muscleSoreness(), baseline.muscleSoreness(), true)) {
                 reasons.add(Reason.recovery("SORENESS", morning.muscleSoreness(), baseline.muscleSoreness()));
             }
+            // Poor sleep adds to the risk score but is never a signal on its own.
+            if (worseBy(morning.sleepQuality(), baseline.sleepQuality(), false)) {
+                reasons.add(Reason.recovery("SLEEP", morning.sleepQuality(), baseline.sleepQuality()));
+            }
         }
 
         if (latestWorkout != null && load != null && load.meanAu() > 0) {
@@ -59,13 +63,15 @@ public final class DeviationDetector {
             }
         }
 
-        String riskStatus = safety ? "RED" : reasons.isEmpty() ? "GREEN" : "YELLOW";
-        return new Assessment(null, now, riskStatus, reasons, BaselineRules.VERSION);
+        return reasons;
     }
 
-    /** Higher is worse for fatigue and soreness; lower is worse for wellness. */
+    /** Points in the worse direction: higher is worse for fatigue and soreness, lower for wellness and sleep. */
+    public static double pointsWorse(int value, double baseline, boolean higherIsWorse) {
+        return higherIsWorse ? value - baseline : baseline - value;
+    }
+
     static boolean worseBy(int value, double baseline, boolean higherIsWorse) {
-        double worse = higherIsWorse ? value - baseline : baseline - value;
-        return worse >= BaselineRules.RECOVERY_DELTA;
+        return pointsWorse(value, baseline, higherIsWorse) >= BaselineRules.RECOVERY_DELTA;
     }
 }

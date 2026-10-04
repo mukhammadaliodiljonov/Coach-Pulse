@@ -26,7 +26,7 @@ public record Reason(
         return new Reason("SAFETY_SYMPTOM", symptoms, source, null, null, null, null, null, null, null);
     }
 
-    /** {@code metric} is FATIGUE, WELLNESS or SORENESS. */
+    /** {@code metric} is FATIGUE, WELLNESS, SORENESS or SLEEP (which only adds to the risk score). */
     public static Reason recovery(String metric, int value, double baseline) {
         return new Reason("RECOVERY", null, null, metric, value, baseline, null, null, null, null);
     }

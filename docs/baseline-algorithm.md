@@ -1,8 +1,8 @@
 # Personal baselines and deviations
 
 **Status:** approved rules, version `baseline-v1`. Implemented in the backend
-(`com.coachpulse.baseline`) and returned by `GET /api/teams/{teamId}/athletes/today` as each athlete's `baseline` and
-`assessment`. The thresholds are placeholders to be reviewed by a qualified sports-medicine professional before
+(`com.coachpulse.baseline`) and returned by `GET /api/teams/{teamId}/athletes/today` as each athlete's `baseline`.
+The deviations below feed the risk model ([`risk-model.md`](risk-model.md)), which scores them and sets the status. The thresholds are placeholders to be reviewed by a qualified sports-medicine professional before
 launch; they all live in `BaselineRules`.
 
 CoachPulse compares each athlete with **their own** usual levels, never with a fixed team or medical number.
@@ -34,22 +34,20 @@ athlete's latest), so it is never compared with itself. Rest days are not sessio
    - **usual range** = the 25th to 75th percentile of session loads (linear interpolation), i.e. the middle half.
    All three are rounded to whole AU, and the comparison below uses the rounded mean, as shown to the coach.
 
-## Deviations and status
+## Deviations
 
-| Signal | Rule | Status |
-|---|---|---|
-| Safety symptom | Any symptom in today's morning check-in, or in the latest post-training check-in if it was today or yesterday. Needs no baseline. | High priority (`RED`) |
-| Recovery | Today's morning check-in has fatigue or soreness **2 or more points above** the baseline, or wellness **2 or more points below** it (baseline rounded to one decimal) | Needs review (`YELLOW`) |
-| Training load | The latest session's load is **15% or more above** the load baseline mean | Needs review (`YELLOW`) |
-| Sleep | Shown next to the baseline; never flagged on its own | — |
+| Reason | Rule |
+|---|---|
+| Safety symptom | Any symptom in today's morning check-in, or in the latest post-training check-in if it was today or yesterday. Needs no baseline. |
+| Recovery | Today's morning check-in has fatigue or soreness **2 or more points above** the baseline, or wellness **2 or more points below** it (baseline rounded to one decimal) |
+| Sleep | Sleep quality **2 or more points below** the baseline. Adds to the risk score only; never a signal on its own |
+| Training load | The latest session's load is **15% or more above** the load baseline mean |
 
-The status is the most serious signal: `RED` with any safety symptom, else `YELLOW` with any other signal, else `GREEN`.
-Recovery needs today's morning check-in and a wellness baseline; training load needs a load baseline. Until then
-only safety symptoms are flagged.
+Recovery and sleep need today's morning check-in and a wellness baseline; training load needs a load baseline. Until
+then only safety symptoms count. The risk model turns these reasons into a score and a status.
 
 ## Output
 
 `baseline` is null until there is a wellness baseline; its `trainingLoad` is null until there is a load baseline.
-`assessment` is the result of the rules above, computed live on each request (`id` is null because it isn't stored;
-storing assessments and raising alerts belongs to the signal engine). Reasons use the shapes in
-[`api-contract.md`](api-contract.md#signal-engine-and-reason_codes).
+The `assessment` (status and reasons) comes from the risk model; see [`risk-model.md`](risk-model.md#storage) for
+when it is stored. Reasons use the shapes in [`api-contract.md`](api-contract.md#signal-engine-and-reason_codes).

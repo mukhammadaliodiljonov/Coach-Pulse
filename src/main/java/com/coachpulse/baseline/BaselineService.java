@@ -20,8 +20,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Personal baselines and today's assessment for a set of athletes, calculated live from their check-ins
- * (docs/baseline-algorithm.md). Nothing is stored, so results always reflect the latest check-ins.
+ * Personal baselines for a set of athletes, calculated live from their check-ins (docs/baseline-algorithm.md).
+ * Nothing is stored, so they always reflect the latest check-ins.
  */
 @Service
 public class BaselineService {
@@ -34,23 +34,21 @@ public class BaselineService {
         this.clock = clock;
     }
 
-    /** {@code baseline} is null while forming; {@code assessment} is always set. */
-    public record Result(Baseline baseline, Assessment assessment) {
+    /**
+     * {@code baseline} is the wellness baseline (with the load baseline inside), null while forming; {@code load}
+     * is the load baseline on its own, which the risk engine uses even while the wellness baseline forms.
+     */
+    public record Baselines(Baseline baseline, LoadBaseline load) {
     }
 
-    /**
-     * @param morningToday today's morning check-in per athlete (missing while pending)
-     * @param latestWorkout each athlete's latest post-training check-in from any day (missing without one)
-     */
+    /** @param latestWorkout each athlete's latest post-training check-in, the session the load baseline leaves out */
     @Transactional(readOnly = true)
-    public Map<UUID, Result> evaluate(List<UUID> athleteIds, Map<UUID, MorningCheckin> morningToday,
-            Map<UUID, WorkoutCheckin> latestWorkout) {
+    public Map<UUID, Baselines> calculate(List<UUID> athleteIds, Map<UUID, WorkoutCheckin> latestWorkout) {
         if (athleteIds.isEmpty()) {
             return Map.of();
         }
         ZoneId zone = clock.getZone();
         LocalDate today = LocalDate.now(clock);
-        OffsetDateTime now = OffsetDateTime.now(clock);
         OffsetDateTime windowStart = today.minusDays(BaselineRules.WINDOW_DAYS).atStartOfDay(zone).toOffsetDateTime();
         OffsetDateTime tomorrow = today.plusDays(1).atStartOfDay(zone).toOffsetDateTime();
 
@@ -72,7 +70,7 @@ public class BaselineService {
                             .add(CheckinRows.workout(rs));
                 });
 
-        Map<UUID, Result> results = new HashMap<>();
+        Map<UUID, Baselines> results = new HashMap<>();
         for (UUID athleteId : athleteIds) {
             WorkoutCheckin latest = latestWorkout.get(athleteId);
             Baseline wellness = BaselineCalculator.wellness(mornings.getOrDefault(athleteId, List.of()), today, zone)
@@ -82,9 +80,7 @@ public class BaselineService {
                     .orElse(null);
             Baseline baseline = wellness == null ? null : new Baseline(wellness.windowDays(), wellness.sleepQuality(),
                     wellness.fatigue(), wellness.muscleSoreness(), wellness.overallWellness(), load);
-            Assessment assessment = DeviationDetector.assess(
-                    morningToday.get(athleteId), latest, baseline, load, today, zone, now);
-            results.put(athleteId, new Result(baseline, assessment));
+            results.put(athleteId, new Baselines(baseline, load));
         }
         return results;
     }
