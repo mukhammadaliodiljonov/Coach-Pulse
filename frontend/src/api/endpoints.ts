@@ -7,6 +7,7 @@ import type {
   CheckinDayDto,
   CoachActionDto,
   CreateTeamRequest,
+  JoinTeamRequest,
   LoginRequest,
   LoginResponse,
   MeDto,
@@ -17,6 +18,7 @@ import type {
   RecordActionRequest,
   TeamDayDto,
   TeamDto,
+  TeamPreviewDto,
   WorkoutCheckinDto,
   WorkoutCheckinRequest,
 } from './types'
@@ -28,6 +30,10 @@ const id = encodeURIComponent
 export const api = {
   register: (body: RegistrationRequest) =>
     apiRequest<RegistrationResponse>('/auth/register', { method: 'POST', body }),
+
+  previewTeam: (joinCode: string) => apiRequest<TeamPreviewDto>(`/auth/join/${id(joinCode.trim())}`),
+
+  joinTeam: (body: JoinTeamRequest) => apiRequest<RegistrationResponse>('/auth/join', { method: 'POST', body }),
 
   login: (body: LoginRequest) => apiRequest<LoginResponse>('/auth/login', { method: 'POST', body }),
 

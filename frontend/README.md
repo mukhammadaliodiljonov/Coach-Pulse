@@ -24,7 +24,7 @@ The app reads everything through a data source (`src/sources/`):
   team from the design handoff, kept in memory. Actions and check-ins you save last until you reload.
 
 The contract the app expects is in [`docs/api-contract.md`](../docs/api-contract.md), with the TypeScript shapes
-in `src/api/types.ts`; the backend implements the coach endpoints so far, not the athlete ones. In backend mode
+in `src/api/types.ts`. The backend implements all of Phase 1 except recording coach actions. In backend mode
 the app shows real loading, error and offline states, refreshes every minute, and marks the screens whose endpoints
 come later (sessions, trends, reports, settings) as sample data.
 
@@ -32,7 +32,8 @@ come later (sessions, trends, reports, settings) as sample data.
 
 With the backend, both apps need a real sign-in (`POST /api/auth/login`); with sample data they stay an open
 demo. Coaches create an account at `/signup` (`POST /api/auth/register`, then signed in automatically). Athletes
-can't sign up yet: the backend has no athlete registration or team-code join. The code is in `src/auth/`:
+join at `/athlete/join` with their coach's team code (shown at the end of team setup): the code is checked, then
+they create an account on that team (`POST /api/auth/join`) and are signed in. The code is in `src/auth/`:
 
 - **Session**: the JWT from login is kept in `sessionStorage` for this tab only. It survives a reload and is cleared
   when the tab closes, on log out, when the token expires (a timer at its `exp`), and when the API answers `401`.

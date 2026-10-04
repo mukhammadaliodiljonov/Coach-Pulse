@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { Link, Navigate } from 'react-router'
-import { ApiError, describeError } from '../../api/client'
+import { describeFormError } from '../../api/client'
 import { api } from '../../api/endpoints'
 import { useAuth } from '../../auth/useAuth'
 import { Button } from '../../components/ui/Button'
@@ -10,15 +10,6 @@ import { paths } from '../../navigation/paths'
 import ui from '../../styles/ui.module.css'
 import { AuthPanel } from './AuthPanel'
 import styles from './Login.module.css'
-
-/** The first field message from a validation failure, else the server's message. */
-function signUpError(error: unknown): string {
-  if (error instanceof ApiError && error.problem?.errors) {
-    const first = Object.values(error.problem.errors)[0]
-    if (first) return first.charAt(0).toUpperCase() + first.slice(1)
-  }
-  return describeError(error)
-}
 
 /**
  * Creates a coach account with the backend, then signs in with it. RedirectIfSignedIn then opens the
@@ -45,7 +36,7 @@ export function SignUp() {
       await api.register({ email, password, firstName: value('firstName'), lastName: value('lastName') })
       await signIn(email, password)
     } catch (e) {
-      setError(signUpError(e))
+      setError(describeFormError(e))
       setSubmitting(false)
     }
   }

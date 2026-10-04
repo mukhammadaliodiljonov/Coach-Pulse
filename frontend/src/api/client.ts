@@ -82,6 +82,15 @@ export function describeError(error: unknown): string {
   return error instanceof Error ? error.message : 'Something went wrong.'
 }
 
+/** For forms: the first field message of a validation failure, else describeError. */
+export function describeFormError(error: unknown): string {
+  if (error instanceof ApiError && error.problem?.errors) {
+    const first = Object.values(error.problem.errors)[0]
+    if (first) return first.charAt(0).toUpperCase() + first.slice(1)
+  }
+  return describeError(error)
+}
+
 export function isUnreachable(error: unknown): boolean {
   return error instanceof ApiError && error.isUnreachable
 }
