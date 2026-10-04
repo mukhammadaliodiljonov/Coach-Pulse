@@ -44,7 +44,7 @@ export function AthleteHome() {
 
   return (
     <div className={styles.stack}>
-      <Logo size={32} wordmarkSize={18} wordmark="plain" />
+      <Logo size={32} wordmarkSize={18} wordmark="plain" className={styles.phoneOnly} />
       <div className={styles.heading}>
         <h1 className={styles.title}>Good morning, {profile.firstName}</h1>
         <p className={styles.lead}>Two quick check-ins help your coach look out for you.</p>

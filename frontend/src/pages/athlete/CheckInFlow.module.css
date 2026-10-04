@@ -347,6 +347,8 @@
 }
 
 .footer {
+  position: sticky;
+  bottom: 0;
   padding: 16px 20px 24px;
   border-top: 1px solid var(--cp-divider);
   background: var(--cp-surface);

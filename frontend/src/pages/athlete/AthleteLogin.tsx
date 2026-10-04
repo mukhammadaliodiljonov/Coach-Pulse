@@ -1,7 +1,8 @@
-import { useNavigate } from 'react-router'
+import { Link, useNavigate } from 'react-router'
 import { useAuth } from '../../auth/useAuth'
 import { useSignInForm } from '../../auth/useSignInForm'
 import { Button, ButtonLink } from '../../components/ui/Button'
+import { Icon } from '../../components/ui/Icon'
 import { Input } from '../../components/ui/Input'
 import { LogoMark } from '../../components/ui/Logo'
 import { useTitle } from '../../lib/useTitle'
@@ -73,6 +74,10 @@ export function AthleteLogin() {
             Join with team code
           </ButtonLink>
         </div>
+        <Link to={paths.login} className={styles.switchApp}>
+          <Icon name="user" size={16} />
+          I’m a coach — sign in to the coach app
+        </Link>
       </form>
     </div>
   )

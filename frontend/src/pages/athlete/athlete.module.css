@@ -1,69 +1,52 @@
-/* Phone frame: 390×780 on desktop, full screen on phones. */
+/*
+ * The athlete app is a web page like the coach app: a sidebar and a centered column on wider screens,
+ * full width with a floating bottom nav on phones (below 760px, as in the coach app).
+ */
 .page {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  padding: 24px 16px 40px;
-  background: var(--cp-bg);
+  background: var(--cp-surface);
 }
 
-.frameBar {
-  width: 390px;
-  max-width: 100%;
+.shell {
+  flex: 1;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--cp-text-muted);
+  min-height: 100vh;
 }
 
-.frameBar a {
-  padding: 8px 0;
-  font-size: 13px;
-}
-
-.phone {
-  position: relative;
-  width: 390px;
-  height: 780px;
-  max-width: 100%;
+.main {
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
-  border-radius: 40px;
-  background: var(--cp-surface);
-  box-shadow: var(--shadow-phone);
 }
 
-@media (max-width: 519px) {
-  .page {
-    padding: 0;
-    gap: 0;
-  }
-
-  .frameBar {
-    display: none;
-  }
-
-  .phone {
-    width: 100%;
-    height: 100vh;
-    height: 100dvh;
-    border-radius: 0;
-    box-shadow: none;
-  }
+/* Check-in flows: one focused column without navigation. */
+.flow {
+  width: 100%;
+  max-width: 720px;
+  min-height: 100vh;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
 }
 
 .scroll {
   flex: 1;
-  overflow-y: auto;
-  padding: 20px;
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 32px 24px 48px;
   display: flex;
   flex-direction: column;
   gap: 20px;
+}
+
+@media (max-width: 759px) {
+  .scroll {
+    padding: 20px 16px;
+  }
 }
 
 .signing {
@@ -89,15 +72,25 @@
 }
 
 /* Bottom nav */
+/* Phones only; wider screens use the sidebar. */
 .nav {
+  position: sticky;
+  bottom: 16px;
+  z-index: 10;
   flex-shrink: 0;
   height: 62px;
   margin: 0 16px 16px;
-  display: flex;
+  display: none;
   align-items: center;
   border-radius: 26px;
   background: var(--cp-primary);
   box-shadow: var(--shadow-nav);
+}
+
+@media (max-width: 759px) {
+  .nav {
+    display: flex;
+  }
 }
 
 .navItem {
@@ -581,10 +574,22 @@
 /* Login & join */
 .auth {
   flex: 1;
+  width: 100%;
+  max-width: 440px;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
   gap: 22px;
   padding-top: 24px;
+}
+
+.switchApp {
+  align-self: center;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
 }
 
 .newTeam {
@@ -619,6 +624,9 @@
 
 .join {
   flex: 1;
+  width: 100%;
+  max-width: 440px;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
   gap: 22px;
@@ -634,4 +642,11 @@
 
 .visibilityTitle {
   font-weight: 800;
+}
+
+/* Shown on phones only, where there's no sidebar (e.g. the logo on the home screen). */
+@media (min-width: 760px) {
+  .scroll .phoneOnly {
+    display: none;
+  }
 }
