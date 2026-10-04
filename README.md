@@ -102,5 +102,13 @@ membership in one transaction. The role is never taken from the request.
 for the athlete only. `GET /api/athletes/{athleteId}/today` and
 `/checkins?days=` (up to 60) are for the athlete and their team's coaches;
 anyone else gets `404`. `symptoms` is required on both check-ins, so a missing
-answer is never stored as "no symptoms". Check-ins are stored only; the
-server-side signal engine and alerts come later.
+answer is never stored as "no symptoms".
+
+## Personal baselines
+
+Each athlete's usual wellness scores and training load are calculated live
+from their own last 21 days of check-ins (`BaselineService`), and today's
+check-ins are compared with them (`DeviationDetector`). The dashboard gets both
+as `baseline` and `assessment`. The rules and thresholds are in
+`docs/baseline-algorithm.md` and `BaselineRules`. Assessments are not stored and
+no alerts are raised yet; that is the signal engine's job.
