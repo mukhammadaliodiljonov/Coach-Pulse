@@ -348,7 +348,9 @@ function Recovery({ athlete: a }: { athlete: Athlete }) {
       </div>
       {a.checkedInAt && a.baseline && (
         <p className={styles.trendLine} data-flagged={declining}>
-          {declining ? 'Recovery has declined over the last 3 days.' : `Recovery is within ${a.firstName}’s usual range.`}
+          {declining
+            ? `Recovery is below ${a.firstName}’s usual range today.`
+            : `Recovery is within ${a.firstName}’s usual range.`}
         </p>
       )}
     </section>

@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import com.coachpulse.baseline.BaselineService;
 import com.coachpulse.checkin.CheckinRows;
 import com.coachpulse.checkin.MorningCheckin;
 import com.coachpulse.checkin.WorkoutCheckin;
@@ -41,12 +42,15 @@ public class TeamDashboardService {
 
     private final JdbcClient jdbc;
     private final TeamAccess teamAccess;
+    private final BaselineService baselines;
     private final ObjectMapper objectMapper;
     private final Clock clock;
 
-    public TeamDashboardService(JdbcClient jdbc, TeamAccess teamAccess, ObjectMapper objectMapper, Clock clock) {
+    public TeamDashboardService(JdbcClient jdbc, TeamAccess teamAccess, BaselineService baselines,
+            ObjectMapper objectMapper, Clock clock) {
         this.jdbc = jdbc;
         this.teamAccess = teamAccess;
+        this.baselines = baselines;
         this.objectMapper = objectMapper;
         this.clock = clock;
     }
@@ -129,6 +133,8 @@ public class TeamDashboardService {
                             null));
                 });
 
+        Map<UUID, BaselineService.Result> evaluated = baselines.evaluate(ids, morning, latestWorkout);
+
         List<AthleteDay> days = athletes.stream()
                 .map(a -> new AthleteDay(
                         a.athleteId(),
@@ -138,9 +144,9 @@ public class TeamDashboardService {
                         a.dateOfBirth(),
                         morning.get(a.athleteId()),
                         latestWorkout.get(a.athleteId()),
-                        null,
+                        evaluated.get(a.athleteId()).baseline(),
                         loadHistory(loads.getOrDefault(a.athleteId(), Map.of()), historyStart),
-                        null,
+                        evaluated.get(a.athleteId()).assessment(),
                         alerts.get(a.athleteId())))
                 .toList();
         return new TeamDayResponse(teamId, today, days);

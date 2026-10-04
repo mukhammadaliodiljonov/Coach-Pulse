@@ -184,8 +184,10 @@ export type ReasonDto =
   | { kind: 'RECOVERY'; metric: RecoveryMetricCode; value: number; baseline: number }
   | { kind: 'TRAINING_LOAD'; loadAu: number; baselineLowAu: number; baselineHighAu: number; changePct: number }
 
+/** The baseline rules' verdict (docs/baseline-algorithm.md). */
 export interface AssessmentDto {
-  id: Uuid
+  /** Null while assessments are computed live rather than stored. */
+  id: Uuid | null
   createdAt: IsoDateTime
   riskStatus: RiskStatus
   reasons: ReasonDto[]

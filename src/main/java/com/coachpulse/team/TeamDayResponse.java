@@ -5,6 +5,8 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 
+import com.coachpulse.baseline.Assessment;
+import com.coachpulse.baseline.Baseline;
 import com.coachpulse.checkin.MorningCheckin;
 import com.coachpulse.checkin.WorkoutCheckin;
 
@@ -12,9 +14,9 @@ import com.coachpulse.checkin.WorkoutCheckin;
 public record TeamDayResponse(UUID teamId, LocalDate date, List<AthleteDay> athletes) {
 
     /**
-     * One athlete's day. {@code baseline} and {@code assessment} are always null for now: the server-side
-     * signal engine doesn't exist yet, and the web app evaluates check-ins itself while they're null.
-     * {@code position} is null until athlete_profiles has the column.
+     * One athlete's day. {@code baseline} is null while it's forming; {@code assessment} is today's verdict
+     * from the baseline rules (docs/baseline-algorithm.md), computed live. {@code position} is null until
+     * athlete_profiles has the column.
      */
     public record AthleteDay(
             UUID athleteId,
@@ -24,9 +26,9 @@ public record TeamDayResponse(UUID teamId, LocalDate date, List<AthleteDay> athl
             LocalDate dateOfBirth,
             MorningCheckin morningCheckin,
             WorkoutCheckin latestWorkout,
-            Object baseline,
+            Baseline baseline,
             List<DailyLoad> loadHistory,
-            Object assessment,
+            Assessment assessment,
             AlertSummary alert) {
     }
 
